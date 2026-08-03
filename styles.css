@@ -1,0 +1,351 @@
+/* ==========================================================================
+   EDIT ME: colors, fonts, and spacing all live in this one block.
+   Change these and the whole page follows.
+
+   The design is deliberately flat: no gradients, no shadows, no rounded
+   corners, no animation. Structure comes from hairline rules, alignment,
+   and type size — not from boxes.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  --color-bg: #f2f1ec;
+  --color-border: #d6d4cd;
+  --color-text: #17181a;
+  --color-text-muted: #6c6e72;
+  --color-accent: #1d3f8f;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+
+  --rule: 1px solid var(--color-border);
+  --page-width: 32rem;
+  --gutter: 1.5rem;
+}
+
+/* Dark theme. Two selectors so it works from the operating system setting on
+   its own, and from the toggle button. Keep these blocks in sync. */
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #121314;
+  --color-border: #2c2e31;
+  --color-text: #efeee9;
+  --color-text-muted: #93969a;
+  --color-accent: #9db4ea;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --color-bg: #121314;
+    --color-border: #2c2e31;
+    --color-text: #efeee9;
+    --color-text-muted: #93969a;
+    --color-accent: #9db4ea;
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-accent);
+}
+
+h1,
+h2,
+p,
+ul {
+  margin: 0;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: var(--gutter);
+  translate: 0 -200%;
+  padding: 0.5rem 0.75rem;
+  border: var(--rule);
+  background: var(--color-bg);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  z-index: 2;
+}
+
+.skip-link:focus-visible {
+  translate: 0 0;
+}
+
+/* The sprite holds icon definitions only and must never take up space. */
+.sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Small uppercase section label. */
+.label {
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+
+.page {
+  width: 100%;
+  max-width: var(--page-width);
+  margin-inline: auto;
+  padding: clamp(3.5rem, 12vh, 7rem) var(--gutter) 4rem;
+}
+
+/* ==========================================================================
+   Profile header
+   ========================================================================== */
+
+.profile__avatar {
+  display: block;
+  width: 96px;
+  height: 96px;
+}
+
+.profile__name {
+  margin-top: 1.75rem;
+  font-size: clamp(2rem, 8vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.profile__tagline {
+  max-width: 26rem;
+  margin-top: 0.75rem;
+  font-size: 1.0625rem;
+  text-wrap: pretty;
+}
+
+.profile__meta {
+  margin-top: 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/* ==========================================================================
+   Link list — hairline rows, no cards
+   ========================================================================== */
+
+.links {
+  margin-top: 3rem;
+  border-top: var(--rule);
+}
+
+.links li {
+  border-bottom: var(--rule);
+}
+
+.link {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1.125rem 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.link__index {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.link__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.link__title {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.link__meta {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.link__arrow {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  /* Nudge the icon onto the title's baseline row. */
+  align-self: center;
+}
+
+.link:hover .link__title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.link:hover .link__arrow {
+  color: var(--color-text);
+}
+
+/* ==========================================================================
+   Elsewhere
+   ========================================================================== */
+
+.elsewhere {
+  margin-top: 3rem;
+}
+
+.elsewhere__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem 1.5rem;
+  margin-top: 0.875rem;
+}
+
+.elsewhere__list a {
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.elsewhere__list a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.footer {
+  margin-top: 4rem;
+  padding-top: 1.25rem;
+  border-top: var(--rule);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.footer a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+/* ==========================================================================
+   Toolbar (theme toggle + copy link)
+   ========================================================================== */
+
+.toolbar {
+  position: fixed;
+  top: var(--gutter);
+  right: var(--gutter);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 1;
+}
+
+.toolbar__button {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: var(--rule);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.toolbar__button:hover {
+  color: var(--color-text);
+}
+
+/* Show the sun in light mode and the moon in dark mode. Both icons live in
+   the same button so its size never shifts when the theme changes. */
+.icon--dark {
+  display: none;
+}
+
+:root[data-theme='dark'] .icon--light {
+  display: none;
+}
+
+:root[data-theme='dark'] .icon--dark {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .icon--light {
+    display: none;
+  }
+
+  :root:not([data-theme='light']) .icon--dark {
+    display: block;
+  }
+}
