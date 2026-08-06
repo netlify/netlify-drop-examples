@@ -45,7 +45,12 @@ styles.css      all the styling; design tokens live in :root
 script.js       theme toggle and copy-link button (both optional)
 assets/         profile picture
 favicon.svg     browser tab icon
+manifest.json   the file list Netlify Drop publishes
+_headers        lets the Netlify dashboard fetch this project
 ```
+
+**If you add a file, add it to `manifest.json` too**, or it won't be published.
+CI fails if the two disagree.
 
 ## About the design
 

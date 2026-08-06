@@ -1,0 +1,6 @@
+# The Netlify dashboard fetches this project from app.netlify.com (and from
+# deploy previews, whose hostnames vary) to offer it as a one-click example on
+# /drop. Wildcard rather than a fixed origin because deploy-preview hostnames
+# can't be enumerated; everything here is public and uncredentialed.
+/*
+  Access-Control-Allow-Origin: *

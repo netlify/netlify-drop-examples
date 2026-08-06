@@ -1,0 +1,12 @@
+{
+  "_comment": "The files Netlify Drop deploys when someone picks this example. Keep index.html first, and add any new file here or it won't be published.",
+  "files": [
+    "index.html",
+    "styles.css",
+    "script.js",
+    "favicon.svg",
+    "assets/avatar.svg",
+    "README.md",
+    "AGENTS.md"
+  ]
+}

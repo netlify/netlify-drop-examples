@@ -12,6 +12,10 @@ There is no build step, no package manager, and no framework.
 - `script.js` — theme toggle and copy-link button. Both are progressive
   enhancements; the toolbar is `hidden` in the markup until this file runs.
 - `assets/avatar.svg`, `favicon.svg` — images.
+- `manifest.json` — the list of files Netlify Drop publishes. **Adding a file to
+  this project means adding it here too**; CI fails when the two disagree, and a
+  file missing from the list is silently left out of the published site.
+- `_headers` — CORS, so the Netlify dashboard can fetch this project. Leave it.
 
 Blocks that a person is likely to want changed are wrapped in `EDIT ME`
 comments. Prefer editing inside those blocks over restructuring around them.
@@ -21,7 +25,8 @@ comments. Prefer editing inside those blocks over restructuring around them.
 **Do not add a `package.json`, a lockfile, or a `netlify.toml` with a `[build]`
 section.** Netlify Drop decides whether a project needs building by looking for
 exactly those files. Adding one means this site can no longer be published by a
-logged-out visitor, which is the whole point of the example.
+logged-out visitor, which is the whole point of the example. The
+`stays-static` GitHub workflow fails the build if you do.
 
 For the same reason, do not introduce a bundler, a CSS preprocessor, a
 framework, or anything that turns `index.html` into generated output. If a
