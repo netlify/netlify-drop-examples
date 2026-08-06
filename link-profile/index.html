@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- EDIT ME: your page title and description ------------------------- -->
+    <title>Avery Quinn — Product designer</title>
+    <meta
+      name="description"
+      content="Product designer working on design systems and developer tools. Find my work, writing, and how to get in touch."
+    />
+
+    <!-- EDIT ME: social sharing preview --------------------------------- -->
+    <meta property="og:title" content="Avery Quinn — Product designer" />
+    <meta
+      property="og:description"
+      content="Product designer working on design systems and developer tools."
+    />
+    <meta property="og:type" content="profile" />
+    <meta name="twitter:card" content="summary" />
+    <!-- ----------------------------------------------------------------- -->
+
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="theme-color" content="#1d3f8f" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- Theme + share controls. Hidden until script.js runs, so they never
+         appear as dead buttons if JavaScript is unavailable. -->
+    <div class="toolbar" hidden id="toolbar">
+      <button type="button" class="toolbar__button" id="theme-toggle">
+        <svg class="icon icon--light" aria-hidden="true">
+          <use href="#icon-sun" />
+        </svg>
+        <svg class="icon icon--dark" aria-hidden="true">
+          <use href="#icon-moon" />
+        </svg>
+        <span class="sr-only" id="theme-toggle-label">Switch theme</span>
+      </button>
+      <button type="button" class="toolbar__button" id="copy-link">
+        <svg class="icon" aria-hidden="true" id="copy-link-icon">
+          <use href="#icon-copy" />
+        </svg>
+        <span class="sr-only">Copy link to this page</span>
+      </button>
+      <span class="sr-only" role="status" id="copy-status"></span>
+    </div>
+
+    <div class="page">
+      <header class="profile">
+        <img class="profile__avatar" src="assets/avatar.svg" alt="" width="96" height="96" />
+
+        <!-- EDIT ME: your name, role, and location ----------------------- -->
+        <h1 class="profile__name">Avery Quinn</h1>
+        <p class="profile__tagline">
+          Product designer building design systems and developer tools.
+        </p>
+        <p class="profile__meta">Lisbon, Portugal</p>
+        <!-- ------------------------------------------------------------- -->
+      </header>
+
+      <main id="main">
+        <!-- EDIT ME: your links. Copy a whole <li> block to add another and
+             carry on the numbering. -->
+        <nav aria-label="My links">
+          <ul class="links">
+            <li>
+              <a class="link" href="https://example.com">
+                <span class="link__index" aria-hidden="true">01</span>
+                <span class="link__body">
+                  <span class="link__title">Portfolio</span>
+                  <span class="link__meta">Case studies and selected work</span>
+                </span>
+                <svg class="icon link__arrow" aria-hidden="true">
+                  <use href="#icon-arrow" />
+                </svg>
+              </a>
+            </li>
+            <li>
+              <a class="link" href="https://example.com/writing">
+                <span class="link__index" aria-hidden="true">02</span>
+                <span class="link__body">
+                  <span class="link__title">Writing</span>
+                  <span class="link__meta">Notes on design and craft</span>
+                </span>
+                <svg class="icon link__arrow" aria-hidden="true">
+                  <use href="#icon-arrow" />
+                </svg>
+              </a>
+            </li>
+            <li>
+              <a class="link" href="https://example.com/call">
+                <span class="link__index" aria-hidden="true">03</span>
+                <span class="link__body">
+                  <span class="link__title">Book a 30-minute call</span>
+                  <span class="link__meta">Usually free within a week</span>
+                </span>
+                <svg class="icon link__arrow" aria-hidden="true">
+                  <use href="#icon-arrow" />
+                </svg>
+              </a>
+            </li>
+            <li>
+              <a class="link" href="mailto:hello@example.com">
+                <span class="link__index" aria-hidden="true">04</span>
+                <span class="link__body">
+                  <span class="link__title">Email me</span>
+                  <span class="link__meta">hello@example.com</span>
+                </span>
+                <svg class="icon link__arrow" aria-hidden="true">
+                  <use href="#icon-arrow" />
+                </svg>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <!-- ------------------------------------------------------------- -->
+
+        <section class="elsewhere" aria-labelledby="elsewhere-heading">
+          <h2 class="label" id="elsewhere-heading">Elsewhere</h2>
+          <!-- EDIT ME: your other profiles ----------------------------- -->
+          <ul class="elsewhere__list">
+            <li><a href="https://github.com/">GitHub</a></li>
+            <li><a href="https://www.linkedin.com/">LinkedIn</a></li>
+            <li><a href="https://bsky.app/">Bluesky</a></li>
+            <li><a href="https://dribbble.com/">Dribbble</a></li>
+          </ul>
+          <!-- --------------------------------------------------------- -->
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>
+          Published with
+          <a href="https://app.netlify.com/drop">Netlify Drop</a>
+        </p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- Icon sprite. Referenced above with <use href="#icon-name" />.
+         Every icon is a 24×24 outline drawn with the current text color. -->
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <defs>
+        <symbol id="icon-arrow" viewBox="0 0 24 24">
+          <path d="M8 16 16 8" />
+          <path d="M9.5 8H16v6.5" />
+        </symbol>
+        <symbol id="icon-sun" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4.25" />
+          <path
+            d="M12 2.5v2.25M12 19.25v2.25M4.22 4.22l1.6 1.6M18.18 18.18l1.6 1.6M2.5 12h2.25M19.25 12h2.25M4.22 19.78l1.6-1.6M18.18 5.82l1.6-1.6"
+          />
+        </symbol>
+        <symbol id="icon-moon" viewBox="0 0 24 24">
+          <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" />
+        </symbol>
+        <symbol id="icon-copy" viewBox="0 0 24 24">
+          <rect x="9" y="9" width="11" height="11" />
+          <path d="M15 6.5V4H4v11h2.5" />
+        </symbol>
+        <symbol id="icon-check" viewBox="0 0 24 24">
+          <path d="M5 12.5 9.5 17 19 7.5" />
+        </symbol>
+      </defs>
+    </svg>
+  </body>
+</html>

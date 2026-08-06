@@ -1,10 +1,10 @@
 name: Stays static
 
-# Netlify Drop publishes this project for logged-out visitors. That only works
-# while it needs no build step: if build detection trips, Drop sends them to
-# signup instead of publishing, which is the dead end this example exists to
-# avoid. Nothing about editing the site makes that visible, so it is enforced
-# here.
+# Netlify Drop publishes these projects for logged-out visitors. That only works
+# while each one needs no build step: if build detection trips, Drop sends them
+# to signup instead of publishing, which is the dead end these examples exist to
+# avoid. Nothing about editing a site makes that visible, so it is enforced here
+# for every example in the repo — one bad example breaks the flow for everyone.
 on:
   push:
     branches: [main]
@@ -16,31 +16,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Reject files that trigger a build
+      - name: Check every example
         run: |
-          found=$(git ls-files 'package.json' 'package-lock.json' 'yarn.lock' 'pnpm-lock.yaml')
-          if [ -n "$found" ]; then
-            echo "::error::This project must stay static, but it contains: $found"
-            echo "Netlify Drop would treat it as needing a build and send logged-out visitors to signup."
+          set -u
+          failed=0
+
+          # An example is any directory with a manifest.json.
+          examples=$(git ls-files '*/manifest.json' | xargs -n1 dirname | sort -u)
+          if [ -z "$examples" ]; then
+            echo "::error::No examples found. Each example is a directory containing manifest.json."
             exit 1
           fi
 
-      - name: Reject a netlify.toml with a [build] section
-        run: |
-          if [ -f netlify.toml ] && grep -q '^\[build\]' netlify.toml; then
-            echo "::error::netlify.toml must not declare a [build] section."
-            exit 1
-          fi
+          for dir in $examples; do
+            echo "── $dir"
 
-      - name: Require index.html at the root
-        run: test -f index.html || { echo "::error::index.html must stay at the repository root."; exit 1; }
+            found=$(git ls-files "$dir/package.json" "$dir/package-lock.json" "$dir/yarn.lock" "$dir/pnpm-lock.yaml")
+            if [ -n "$found" ]; then
+              echo "::error::$dir must stay static, but contains: $found"
+              echo "  Netlify Drop would treat it as needing a build and send logged-out visitors to signup."
+              failed=1
+            fi
 
-      - name: Check manifest.json matches the files on disk
-        run: |
-          listed=$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('manifest.json','utf8')).files.sort().join('\n'))")
-          actual=$(git ls-files | grep -vE '^(\.github/.*|\.gitignore|manifest\.json|_headers)$' | sort)
-          if [ "$listed" != "$actual" ]; then
-            echo "::error::manifest.json does not match the files in the repo."
-            diff <(echo "$listed") <(echo "$actual") || true
-            exit 1
-          fi
+            if [ -f "$dir/netlify.toml" ] && grep -q '^\[build\]' "$dir/netlify.toml"; then
+              echo "::error::$dir/netlify.toml must not declare a [build] section."
+              failed=1
+            fi
+
+            if [ ! -f "$dir/index.html" ]; then
+              echo "::error::$dir needs an index.html at its root, or the published site 404s."
+              failed=1
+            fi
+
+            listed=$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('$dir/manifest.json','utf8')).files.slice().sort().join('\n'))")
+            actual=$(git ls-files "$dir" | sed "s|^$dir/||" | grep -v '^manifest\.json$' | sort)
+            if [ "$listed" != "$actual" ]; then
+              echo "::error::$dir/manifest.json does not match the files on disk."
+              echo "  A file missing from the manifest is silently left out of the published site."
+              diff <(echo "$listed") <(echo "$actual") || true
+              failed=1
+            fi
+          done
+
+          exit $failed

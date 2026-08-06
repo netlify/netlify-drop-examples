@@ -1,70 +1,38 @@
-# netlify-drop-example-profile
+# netlify-drop-examples
 
-A one-page profile site — your name, what you do, and the links you want people
-to follow. Plain HTML, CSS, and a little JavaScript. No build step, no
-dependencies, nothing to install.
+Ready-made static projects offered behind the **Start from an example** button on
+[Netlify Drop](https://app.netlify.com/drop). Picking one publishes it straight
+to the visitor's own URL — no download, no account needed to start.
 
-This is the example site behind the **Start from an example** button on
-[Netlify Drop](https://app.netlify.com/drop).
+Browse them at **[drop-examples.netlify.app](https://drop-examples.netlify.app)**.
+Every example is live at its own path, so the URL is both the demo and the source
+the dashboard fetches.
 
-## Make it yours
+## Examples
 
-Open `index.html` and `styles.css` in any editor. Everything you'd want to
-change is marked with an `EDIT ME` comment:
+| Path             | What it is                                          |
+| ---------------- | --------------------------------------------------- |
+| `link-profile/`  | A one-page profile with your links (link-in-bio)     |
 
-| What                         | Where                                   |
-| ---------------------------- | --------------------------------------- |
-| Name, role, location         | `index.html` — the `<header>`           |
-| Your links                   | `index.html` — the `<ul class="links">` |
-| Other profiles               | `index.html` — the "Elsewhere" section  |
-| Page title and share preview | `index.html` — the `<head>`             |
-| Colors, fonts, spacing       | `styles.css` — the `:root` block at top |
-| Profile picture              | `assets/avatar.svg`                     |
+## Adding an example
 
-To use a photo instead of the illustrated avatar, drop it in `assets/` and
-point the `<img class="profile__avatar">` `src` at it. Square images work best.
+1. Create a directory named for the **category**, not the design — `resume`, not
+   `blue-serif-resume`. The path is a public URL and the dashboard fetches it by
+   name, so it should outlive any redesign.
+2. Put `index.html` at that directory's root, plus a `manifest.json` listing
+   every file to publish.
+3. Keep it static. **No `package.json`, no lockfile, no `netlify.toml` with a
+   `[build]` section.** Netlify Drop decides whether a project needs building by
+   looking for exactly those, and a project that needs building can't be
+   published by a logged-out visitor — which is the whole point of these.
+4. Add a row to the table above and a card to the root `index.html`.
 
-## Preview it
+The `stays-static` workflow enforces 2 and 3 for every example on every push.
 
-There is no dev server to run. Open `index.html` in your browser:
+## How the dashboard uses this
 
-```sh
-open index.html
-```
+It fetches `/<example>/manifest.json`, then each listed file, and feeds them into
+the same upload path a dragged folder takes. Nothing here is vendored into the
+dashboard, so changes go live on push without a dashboard deploy.
 
-## Publish it
-
-Drag this folder onto [app.netlify.com/drop](https://app.netlify.com/drop) and
-you'll get a live URL in a few seconds. No account needed to start.
-
-## What's in here
-
-```
-index.html      the whole page, including the icon set at the bottom
-styles.css      all the styling; design tokens live in :root
-script.js       theme toggle and copy-link button (both optional)
-assets/         profile picture
-favicon.svg     browser tab icon
-manifest.json   the file list Netlify Drop publishes
-_headers        lets the Netlify dashboard fetch this project
-```
-
-**If you add a file, add it to `manifest.json` too**, or it won't be published.
-CI fails if the two disagree.
-
-## About the design
-
-Flat, by intention: no gradients, no drop shadows, no rounded corners, and no
-animation anywhere. Structure comes from hairline rules, alignment, and the size
-relationship between headings and body text. If you're changing the styling,
-that's the thing worth keeping.
-
-- Light and dark themes both work. The page follows your operating system
-  setting, and the toggle in the corner overrides it and remembers your choice.
-- Keyboard and screen-reader accessible: skip link, real `<button>` and `<a>`
-  elements, visible focus outlines, and a single `<h1>`.
-- The link numbers (`01`, `02`, …) are decorative and hidden from screen
-  readers. If you add or reorder links, renumber them by hand.
-- There is deliberately no `package.json`. Adding one turns this into a project
-  that needs building, which means Netlify Drop can no longer publish it
-  without asking you to sign in first.
+`_headers` allows cross-origin reads, which is what lets the dashboard fetch it.
