@@ -8,83 +8,349 @@
       name="description"
       content="Ready-made static projects you can publish in one click from Netlify Drop."
     />
-    <link rel="icon" href="link-profile/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <style>
+      /* ======================================================================
+         This gallery is its own site. It deliberately shares no palette with
+         the examples it lists — an example should look like itself, not like
+         the index that points at it.
+
+         The design is flat in the Scandinavian sense: no shadows, no radii,
+         no gradients, no motion. Structure comes from a grid, hairline rules,
+         generous space, and one muted accent used sparingly.
+         ====================================================================== */
+
       :root {
         color-scheme: light dark;
-        --bg: #f2f1ec;
-        --border: #d6d4cd;
-        --text: #17181a;
-        --muted: #6c6e72;
-        --accent: #1d3f8f;
+
+        --bg: #e9ebeb;
+        --surface: #f5f6f6;
+        --border: #cdd2d2;
+        --text: #1b1e1f;
+        --muted: #6b7173;
+        --accent: #a1503c;
       }
+
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #121314;
-          --border: #2c2e31;
-          --text: #efeee9;
-          --muted: #93969a;
-          --accent: #9db4ea;
+          --bg: #1b1e1f;
+          --surface: #232727;
+          --border: #383d3e;
+          --text: #e7e9e9;
+          --muted: #969c9d;
+          --accent: #d08d76;
         }
       }
-      * { box-sizing: border-box; }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
-        padding: clamp(3.5rem, 12vh, 7rem) 1.5rem 4rem;
+        padding: clamp(3rem, 10vh, 6rem) 1.5rem 4rem;
         background: var(--bg);
         color: var(--text);
-        font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        font:
+          16px/1.55 ui-sans-serif,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
       }
-      .page { max-width: 32rem; margin-inline: auto; }
-      h1 { margin: 0; font-size: clamp(2rem, 8vw, 2.5rem); font-weight: 600; letter-spacing: -0.03em; }
-      .lede { max-width: 26rem; margin: 0.75rem 0 0; }
-      .label {
-        margin: 3rem 0 0;
-        color: var(--muted);
-        font-size: 0.6875rem;
+
+      .page {
+        max-width: 58rem;
+        margin-inline: auto;
+      }
+
+      a {
+        color: var(--accent);
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      /* ---------- Header ---------- */
+
+      .logo {
+        display: block;
+        width: 145px;
+        height: auto;
+      }
+
+      h1 {
+        margin: 1.75rem 0 0;
+        font-size: clamp(2.125rem, 6vw, 3rem);
         font-weight: 600;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
+        letter-spacing: -0.035em;
+        line-height: 1.05;
       }
-      ul { margin: 0.875rem 0 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }
-      li { border-bottom: 1px solid var(--border); }
-      a.example { display: block; padding: 1.125rem 0; color: inherit; text-decoration: none; }
-      a.example:hover .title { text-decoration: underline; text-underline-offset: 3px; }
-      .title { font-size: 1.0625rem; font-weight: 500; }
-      .meta { display: block; color: var(--muted); font-size: 0.875rem; }
-      footer { margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8125rem; }
-      a { color: var(--accent); }
-      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+      .lede {
+        max-width: 34rem;
+        margin: 1rem 0 0;
+        font-size: 1.0625rem;
+        text-wrap: pretty;
+      }
+
+      /* ---------- Card grid ---------- */
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+        gap: 1.25rem;
+        margin: 3.5rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding: 1.75rem;
+        border: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      /* Hover and focus are the same state, so a keyboard reaching the card
+         gets the affordance a mouse does. Flat, so the border carries it. */
+      .card:hover,
+      .card:focus-within {
+        border-color: var(--muted);
+      }
+
+      /* Only the heading holds the card's link, so the link keeps a unique,
+         descriptive label. Its pseudo-content stretches over the whole card
+         to make the surface clickable. */
+      .card__title {
+        margin: 0;
+        font-size: 1.1875rem;
+        font-weight: 500;
+        letter-spacing: -0.015em;
+      }
+
+      .card__title a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .card__title a::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+      }
+
+      .card__title a:hover {
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+
+      .card__path {
+        display: block;
+        margin-top: 0.375rem;
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.8125rem;
+      }
+
+      .card__description {
+        margin: 1rem 0 0;
+        color: var(--muted);
+        font-size: 0.9375rem;
+        text-wrap: pretty;
+      }
+
+      /* Decorative call to action. The heading link is described by it, so it
+         is not a second link and is hidden from assistive tech. */
+      .card__cue {
+        display: flex;
+        align-items: baseline;
+        gap: 0.4375rem;
+        margin: 1.75rem 0 0;
+        color: var(--accent);
+        font-size: 0.9375rem;
+      }
+
+      /* margin-top: auto pins the footer to the bottom, so cards of unequal
+         text length still line their footers up. The negative bottom margin
+         absorbs the touch-target padding below, keeping the text on the
+         card's own padding edge. */
+      .card__footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: auto;
+        margin-bottom: -0.5rem;
+        padding-top: 1rem;
+      }
+
+      /* position: relative is all it takes to raise these above the heading
+         link's pseudo-content, so they stay separately clickable. Padding
+         grows the touch target; none on the left, which would displace the
+         text from the card's alignment. */
+      .card__footer a {
+        position: relative;
+        padding: 0.5rem 0.5rem 0.5rem 0;
+      }
+
+      .card__live {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.375rem;
+        color: var(--muted);
+        font-size: 0.875rem;
+        text-decoration: none;
+      }
+
+      .card__live:hover {
+        color: var(--text);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+
+      .card__source {
+        display: grid;
+        place-items: center;
+        /* Pulled back out to the card's padding edge. */
+        margin-right: -0.5rem;
+        color: var(--muted);
+      }
+
+      .card__source:hover {
+        color: var(--text);
+      }
+
+      /* ---------- Footer ---------- */
+
+      footer {
+        margin-top: 4rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+
+      footer p {
+        max-width: 38rem;
+        margin: 0;
+      }
+
+      footer p + p {
+        margin-top: 0.5rem;
+      }
     </style>
   </head>
   <body>
     <div class="page">
       <header>
-        <h1>Netlify Drop examples</h1>
+        <picture>
+          <source
+            srcset="assets/netlify-drop-logo-dark.svg"
+            media="(prefers-color-scheme: dark)"
+          />
+          <img
+            class="logo"
+            src="assets/netlify-drop-logo-light.svg"
+            alt="Netlify Drop"
+            width="145"
+            height="40"
+          />
+        </picture>
+        <h1>Example projects</h1>
         <p class="lede">
-          Ready-made static projects. Pick one from
-          <a href="https://app.netlify.com/drop">Netlify Drop</a> and it publishes
-          to your own URL in seconds — no account needed to start.
+          Ready-made static sites. Pick one and it publishes to your own URL in
+          seconds, no account needed to start.
         </p>
       </header>
 
       <main>
-        <h2 class="label">Examples</h2>
-        <ul>
-          <li>
-            <a class="example" href="link-profile/">
-              <span class="title">Link profile</span>
-              <span class="meta">A one-page profile with your links — the link-in-bio page</span>
-            </a>
+        <ul class="grid">
+          <li class="card">
+            <h2 class="card__title">
+              <a
+                href="https://app.netlify.com/drop?example=link-profile"
+                aria-describedby="cue-link-profile"
+                >Link profile</a
+              >
+            </h2>
+            <small class="card__path">link-profile/</small>
+            <p class="card__description">
+              One page for your name, a short bio, and every link you want to
+              hand out. Made for the single URL a social profile gives you.
+            </p>
+            <p class="card__cue" id="cue-link-profile" aria-hidden="true">
+              Publish this example
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </p>
+            <div class="card__footer">
+              <a class="card__live" href="link-profile/">
+                View live site
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M7 17 17 7M9 7h8v8" />
+                </svg>
+              </a>
+              <a
+                class="card__source"
+                href="https://github.com/netlify/netlify-drop-examples/tree/main/link-profile"
+                aria-label="Link profile source on GitHub"
+                title="View the files on GitHub"
+              >
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path
+                    d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+                  />
+                </svg>
+              </a>
+            </div>
           </li>
         </ul>
       </main>
 
       <footer>
         <p>
-          Source on
+          Every example is plain HTML and CSS with no build step, so a logged-out
+          visitor can publish one straight from the browser.
+        </p>
+        <p>
+          Source and contribution guide on
           <a href="https://github.com/netlify/netlify-drop-examples">GitHub</a>.
-          Each example is plain HTML and CSS with no build step.
         </p>
       </footer>
     </div>
