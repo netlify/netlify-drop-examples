@@ -1,11 +1,11 @@
 <!-- EDIT ME: swap this file for a photo (avatar.jpg) and update the src in
      index.html. Keeping it square works best. The flat fill below is the same
-     blue as the accent color in styles.css.
+     green as the accent color in styles.css.
 
      Note: this is an XML file, so a comment can never contain two hyphens in
      a row. That means custom property names cannot be written out in here. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="">
-  <rect width="96" height="96" fill="#1d3f8f" />
-  <circle cx="48" cy="38" r="15" fill="#f2f1ec" />
-  <path d="M15 96c0-18.2 14.8-33 33-33s33 14.8 33 33Z" fill="#f2f1ec" />
+  <rect width="96" height="96" fill="#0f6b52" />
+  <circle cx="48" cy="38" r="15" fill="#fafafa" />
+  <path d="M15 96c0-18.2 14.8-33 33-33s33 14.8 33 33Z" fill="#fafafa" />
 </svg>
