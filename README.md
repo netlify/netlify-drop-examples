@@ -1,38 +1,39 @@
-# netlify-drop-examples
+# Drop Starter Projects
 
-Ready-made static projects offered behind the **Start from an example** button on
-[Netlify Drop](https://app.netlify.com/drop). Picking one publishes it straight
-to the visitor's own URL — no download, no account needed to start.
+Start with a finished site instead of a blank page.
 
-Browse them at **[drop-examples.netlify.app](https://drop-examples.netlify.app)**.
-Every example is live at its own path, so the URL is both the demo and the source
-the dashboard fetches.
+This is a small collection of one-page websites that are ready to go. Pick
+the one closest to what you need, publish it and get a live site in seconds,
+then open the files and make it yours.
 
-## Examples
+## Two ways to publish
 
-| Path             | What it is                                          |
-| ---------------- | --------------------------------------------------- |
-| `link-profile/`  | A one-page profile with your links (link-in-bio)     |
+**Browse the gallery.** Open
+[drop-examples.netlify.app](https://drop-examples.netlify.app), look through the
+projects, and publish the one you want. It goes live at its own address, ready
+to share.
 
-## Adding an example
+**Bring your own folder.** Already have a site sitting in a folder on your
+computer? Drag it onto [Netlify Drop](https://app.netlify.com/drop) and it is
+online. The projects here are a starting point for that same flow, not a
+separate product.
 
-1. Create a directory named for the **category**, not the design — `resume`, not
-   `blue-serif-resume`. The path is a public URL and the dashboard fetches it by
-   name, so it should outlive any redesign.
-2. Put `index.html` at that directory's root, plus a `manifest.json` listing
-   every file to publish.
-3. Keep it static. **No `package.json`, no lockfile, no `netlify.toml` with a
-   `[build]` section.** Netlify Drop decides whether a project needs building by
-   looking for exactly those, and a project that needs building can't be
-   published by a logged-out visitor — which is the whole point of these.
-4. Add a row to the table above and a card to the root `index.html`.
+Either way you end up with a real, public site of your own.
 
-The `stays-static` workflow enforces 2 and 3 for every example on every push.
+## What's here
 
-## How the dashboard uses this
+| Project                       | What it's for                                                    |
+| ----------------------------- | ---------------------------------------------------------------- |
+| [Link in bio](link-in-bio/) | One page for your name, a short bio, and every link you hand out |
 
-It fetches `/<example>/manifest.json`, then each listed file, and feeds them into
-the same upload path a dragged folder takes. Nothing here is vendored into the
-dashboard, so changes go live on push without a dashboard deploy.
+More are on the way.
 
-`_headers` allows cross-origin reads, which is what lets the dashboard fetch it.
+## Making it yours
+
+Each project has a README of its own explaining what to change first: your name,
+your links, your colors. Everything meant to be edited is marked in the files,
+so you can find it without reading the whole thing.
+
+## Contributing
+
+Adding a project, or changing one? See [CONTRIBUTING.md](CONTRIBUTING.md).
