@@ -1,0 +1,132 @@
+name: Check examples
+
+# Netlify Drop publishes these projects for visitors who land on /drop. What a
+# visitor gets depends on whether the project needs a build:
+#
+#   static — deploys as-is, immediately, with no account. This is the flow the
+#            examples exist to show off.
+#   build  — Drop detects the framework, zips the source and builds it. There is
+#            no anonymous build API, so a logged-out visitor is sent to signup
+#            first; their project is stashed in the browser and deploys once
+#            they have an account.
+#
+# Both are supported, so this is a choice each example declares via "build" in
+# its manifest.json. What breaks the flow is an example that trips build
+# detection without meaning to — nothing about editing a site makes that
+# visible, so it is enforced here for every example in the repo. One bad
+# example breaks the flow for everyone.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check every example
+        run: |
+          set -u
+          failed=0
+
+          # An example is any directory with a manifest.json.
+          examples=$(git ls-files '*/manifest.json' | xargs -n1 dirname | sort -u)
+          if [ -z "$examples" ]; then
+            echo "::error::No examples found. Each example is a directory containing manifest.json."
+            exit 1
+          fi
+
+          for dir in $examples; do
+            manifest="$dir/manifest.json"
+
+            # "build": true means the example is meant to trip Drop's build
+            # detection. Anything else — absent, false — must stay static.
+            if ! needs_build=$(node -e "
+              try {
+                const m = JSON.parse(require('fs').readFileSync('$manifest', 'utf8'));
+                process.stdout.write(m.build === true ? 'yes' : 'no');
+              } catch (error) {
+                // Just the message — a stack trace would swamp the annotation.
+                process.stderr.write(error.message);
+                process.exit(1);
+              }
+            " 2>&1); then
+              echo "::error::$manifest is not valid JSON: $needs_build"
+              failed=1
+              continue
+            fi
+
+            if [ "$needs_build" = "yes" ]; then
+              echo "── $dir (build)"
+            else
+              echo "── $dir (static)"
+            fi
+
+            if [ "$needs_build" = "no" ]; then
+              found=$(git ls-files "$dir/package.json" "$dir/package-lock.json" "$dir/yarn.lock" "$dir/pnpm-lock.yaml")
+              if [ -n "$found" ]; then
+                echo "::error::$dir must stay static, but contains: $found"
+                echo "  Drop would treat it as needing a build and send logged-out visitors to signup."
+                echo "  If a build is intended, set \"build\": true in $manifest."
+                failed=1
+              fi
+
+              if [ -f "$dir/netlify.toml" ] && grep -q '^\[build\]' "$dir/netlify.toml"; then
+                echo "::error::$dir/netlify.toml must not declare a [build] section."
+                echo "  If a build is intended, set \"build\": true in $manifest."
+                failed=1
+              fi
+
+              if [ ! -f "$dir/index.html" ]; then
+                echo "::error::$dir needs an index.html at its root, or the published site 404s."
+                failed=1
+              fi
+            else
+              # A build example that trips nothing is mislabelled: Drop would
+              # publish its source as-is instead of building it.
+              if [ ! -f "$dir/package.json" ]; then
+                echo "::error::$dir declares \"build\": true but has no package.json at its root."
+                echo "  Drop's build detection keys off it; without one the source is published unbuilt."
+                failed=1
+              fi
+
+              # Drop drops any path containing these when it zips the source, so
+              # a committed file under one is silently missing from the build.
+              stripped=$(git ls-files "$dir" | sed "s|^$dir/||" | grep -E 'node_modules/|dist/|build/' || true)
+              if [ -n "$stripped" ]; then
+                echo "::error::$dir commits files Drop strips when it zips the source:"
+                echo "$stripped" | sed 's/^/    /'
+                echo "  Any path containing node_modules/, dist/ or build/ never reaches the build."
+                failed=1
+              fi
+            fi
+
+            if ! listed=$(node -e "
+              try {
+                const m = JSON.parse(require('fs').readFileSync('$manifest', 'utf8'));
+                if (!Array.isArray(m.files) || m.files.length === 0) {
+                  throw new Error('\"files\" must be a non-empty array');
+                }
+                process.stdout.write(m.files.slice().sort().join('\n'));
+              } catch (error) {
+                process.stderr.write(error.message);
+                process.exit(1);
+              }
+            " 2>&1); then
+              echo "::error::$manifest must list every file to publish: $listed"
+              failed=1
+              continue
+            fi
+
+            actual=$(git ls-files "$dir" | sed "s|^$dir/||" | grep -v '^manifest\.json$' | sort)
+            if [ "$listed" != "$actual" ]; then
+              echo "::error::$manifest does not match the files on disk."
+              echo "  A file missing from the manifest is silently left out of the published site."
+              diff <(echo "$listed") <(echo "$actual") || true
+              failed=1
+            fi
+          done
+
+          exit $failed
