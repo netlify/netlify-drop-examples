@@ -1,0 +1,1219 @@
+/* Note: Slidev's base styles set `.slidev-layout p { margin: 1rem 0; line-height: 1.5rem }`,
+   so single-class paragraph rules below are prefixed with `.slidev-layout` to win. */
+/* ─────────────────────── Tokens ───────────────────────
+   Edit this block to restyle the whole deck. Everything below reads from it. */
+:root {
+  --paper:       #ffffff;   /* slide background */
+  --ink:         #1b2230;   /* headings */
+  --body:        #3a4252;   /* body text */
+  --muted:       #667085;   /* captions, asides */
+
+  --accent:      #4f46e5;   /* eyebrows, links, bold emphasis, check marks */
+  --accent-2:    #8a7a68;   /* secondary highlight (warm grey) */
+  --accent-soft: #eef0ff;   /* pale accent fill (badges) */
+  --accent-line: #c9ccf6;   /* pale accent outline */
+  --rule:        rgba(27, 34, 48, .12);  /* hairlines */
+  --stage:       #e9ebf0;   /* area around the slide (not in fullscreen) */
+  --panel:       #f4f5f8;   /* slide panel (thumbnail sidebar) */
+
+  --cover-from:  #1f2937;   /* cover gradient, top */
+  --cover-to:    #0f1521;   /* cover gradient, bottom */
+  --strip-from:  #4f46e5;   /* bottom strip, left */
+  --strip-to:    #a5b4fc;   /* bottom strip, right */
+
+  --font-heading: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body:    Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --cover-image: url("/bg/cover.svg");  /* optional cover texture; set to none to drop it */
+  --corner-mark: url("/bg/content.svg");  /* small mark, bottom-right of content slides */
+}
+
+/* Dark mode: Slidev adds .dark to <html> when the system is dark (or the user
+   flips the toggle in the nav bar). Only values that change are listed. */
+html.dark {
+  --paper:       #151a23;
+  --ink:         #f1f3f8;
+  --body:        #c3c9d6;
+  --muted:       #8f98a8;
+
+  --accent:      #8f91fa;
+  --accent-2:    #c2b19b;
+  --accent-soft: #232744;
+  --accent-line: #3c4170;
+  --rule:        rgba(255, 255, 255, .13);
+  --stage:       #0c0f15;
+  --panel:       #1a202b;
+
+  --strip-from:  #6366f1;
+  --strip-to:    #a5b4fc;
+}
+
+/* ─────────────────────── Base layout ─────────────────────── */
+.slidev-layout {
+  position: relative;
+  background:
+    /* bottom strip, 6px */
+    linear-gradient(90deg, var(--strip-from) 0%, var(--strip-from) 55%, var(--strip-to) 100%) bottom / 100% 6px no-repeat,
+    var(--paper);
+  color: var(--body);
+
+  /* Padding keeps the first content block about 155px from the top. */
+  padding: 4.4% 5% 4.6%;
+  font-family: var(--font-body);
+  font-size: 22px;
+  line-height: 1.38;
+}
+
+/* Corner mark, bottom-right (set --corner-mark in the token block) */
+.slidev-layout::after {
+  content: "";
+  position: absolute;
+  right: 3.7%;
+  bottom: 4.8%;
+  width: 7.3%;
+  height: 5.3%;
+  background: no-repeat center / contain var(--corner-mark);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.slidev-layout.no-mark::after { display: none; }
+.slidev-layout.no-strip { background: var(--paper); }
+
+/* ─────────────────────── Typography ─────────────────────── */
+.slidev-layout h1 {
+  margin: 0 0 .55rem;
+  max-width: 32ch;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 2.7rem;
+  line-height: 1.05;
+  letter-spacing: -.012em;
+}
+
+.slidev-layout h2 {
+  margin: 0 0 .5rem;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 2.2rem;
+  line-height: 1.05;
+  letter-spacing: -.01em;
+}
+
+.slidev-layout h3 {
+  margin: 0 0 .35rem;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.slidev-layout p,
+.slidev-layout li { color: var(--body); }
+
+.slidev-layout strong { color: var(--ink); font-weight: 800; }
+.slidev-layout b      { color: var(--accent); font-weight: 800; }
+
+.soft-strong { color: var(--ink); font-weight: 700; }
+
+.slidev-layout a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+/* ─────────────────────── Cover ─────────────────────── */
+.slidev-layout.cover {
+  /* Vertical gradient only */
+  background: var(--cover-image, none) center / cover no-repeat, linear-gradient(180deg, var(--cover-from) 0%, var(--cover-to) 100%);
+  color: #fff;
+  padding: 0;
+}
+
+/* Cover's bottom strip, on its own layer (avoids bg shorthand parsing trouble) */
+.slidev-layout.cover::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--strip-from) 0%, var(--strip-from) 55%, var(--strip-to) 100%);
+  z-index: 2;
+}
+
+.slidev-layout.cover h1,
+.slidev-layout.cover h2,
+.slidev-layout.cover h3 { color: #fff; }
+.slidev-layout.cover p,
+.slidev-layout.cover li { color: rgba(255, 255, 255, .92); }
+
+.cover-shell {
+  position: absolute;
+  inset: 0;
+  padding: 4.4% 5% 5.5% 3.2%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+/* Title block sits near the bottom of the slide, flush-left */
+.cover-shell .cover-body {
+  margin-top: auto;
+  padding-bottom: 2.5%;
+  text-align: left;
+}
+
+.cover-shell .cover-body h1,
+.cover-shell .cover-body .subtitle,
+.cover-shell .cover-body .cover-author { text-align: left; margin-left: 0; }
+
+.cover-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cover-mark img {
+  display: block;
+  width: 200px;
+  height: auto;
+}
+
+.cover-series {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: -.005em;
+}
+
+/* Title block — anchored to the left, vertical position handled by margin-top: auto */
+.cover-body {
+  align-self: stretch;
+  text-align: left;
+}
+
+.cover-body h1 {
+  margin: 0 0 .6rem;
+  font-size: 5.1rem;
+  font-weight: 800;
+  line-height: .96;
+  letter-spacing: -.018em;
+  max-width: 100%;
+}
+
+.cover-body .subtitle {
+  margin: 0 0 1.4rem;
+  color: rgba(255, 255, 255, .92);
+  max-width: 880px;
+  font-size: 1.15rem;
+}
+
+.slidev-layout .cover-author {
+  margin: 0;
+  color: rgba(255, 255, 255, .85);
+  font-size: 1rem;
+}
+
+/* ─────────────────────── Title-only & Section header masters ─────────────────────── */
+.slidev-layout.title-only { padding-top: 4.4%; }
+
+.slidev-layout.section-header {
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.slidev-layout.section-header h1 {
+  max-width: 100%;
+  font-size: 3.4rem;
+}
+
+/* ─────────────────────── Section-mark eyebrow (subdued — PDF style) ─────────────────────── */
+.section-mark {
+  display: inline-block;
+  margin: 0 0 .85rem;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+/* Eyebrow with dot ornament (used on cover-ish slides) */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  margin-bottom: .9rem;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.dot {
+  width: .55rem;
+  height: .55rem;
+  border-radius: 999px;
+  background: var(--accent-2);
+  box-shadow: .9rem 0 0 var(--accent);
+}
+
+.subtitle {
+  max-width: 880px;
+  font-size: 1.15rem;
+  color: var(--body);
+}
+
+/* ─────────────────────── Grids & cards (4-col / 3-col / 2-col) ─────────────────────── */
+/* Scoped to slides: Slidev's own page root also uses a "grid" class. */
+.slidev-layout .grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.slidev-layout .grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.slidev-layout .grid.two  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* Bare 4-column style: accent mono heading + body, NO card */
+.cols {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2rem;
+  margin-top: 2.8rem;
+}
+
+.cols h3 {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: .8rem;
+  line-height: 1.2;
+}
+
+.cols p {
+  font-size: 1.2rem;
+  line-height: 1.45;
+  margin: 0;
+  color: var(--body);
+}
+
+/* Two-column comparison (e.g. Beta vs GA, code vs data) */
+.compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+  margin-top: 1.6rem;
+}
+
+.compare h3 {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: .6rem;
+}
+
+.compare ul { margin: 0; padding: 0; list-style: none; }
+.compare li {
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: .95rem;
+}
+.compare li:last-child { border-bottom: 0; }
+
+/* Transparent columns: no card chrome — typography does the work */
+.card {
+  min-width: 0;
+  padding: 0 .1rem 0 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.card.tall { min-height: 0; }
+
+.card.hero-card { padding: 0; background: transparent; }
+
+.card.accent,
+.card.alt { border: 0; padding-left: 0; }
+
+.card h3 { color: var(--ink); }
+
+.card p,
+.card li { margin: 0; font-size: .92rem; }
+
+/* Column eyebrow — same look as .section-mark ("STEP 1" / "WATCH" / etc.) */
+.metric {
+  display: inline-block;
+  margin: 0 0 .65rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+/* ─────────────────────── Numbered TOC ─────────────────────── */
+.toc {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.6rem;
+  max-width: 760px;
+}
+
+.toc-item {
+  display: grid;
+  grid-template-columns: 2.6rem 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.toc-num {
+  width: 2.6rem;
+  height: 2.6rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.toc-text {
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+/* ─────────────────────── Thesis / split / choice ─────────────────────── */
+/* ─────────────────────── Story slide (closing 3-act narrative) ─────────────────────── */
+.story {
+  padding-top: 20px;   /* lines the eyebrow up with the standard layout */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.story .section-mark { margin: 0 0 .86rem; }
+
+.story-title {
+  margin: 0 0 1rem;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -.018em;
+  max-width: 100%;
+}
+
+.story-acts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+  max-width: 1000px;
+}
+
+.story-acts li {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.act-num {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  padding-top: .25rem;
+}
+
+.story-acts strong {
+  display: block;
+  color: var(--ink);
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  line-height: 1.2;
+}
+
+.story-acts p {
+  margin: .25rem 0 0;
+  color: var(--body);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+/* ─────────────────────── Hero / keynote slide (slide 2) ─────────────────────── */
+.hero {
+  padding-top: 20px;   /* lines the eyebrow up with the standard layout */
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+}
+
+.hero .section-mark { margin: 0; }
+
+.hero-title {
+  margin: 0;
+  max-width: 100%;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: 4.6rem;
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: -.025em;
+}
+
+.accent-mark   { color: var(--accent); }
+.accent-mark-2 { color: var(--accent-2); }
+
+.slidev-layout .hero-lead {
+  max-width: 78ch;
+  margin: 0;
+  color: var(--body);
+  font-size: 1.7rem;
+  line-height: 1.4;
+}
+
+.slidev-layout .hero-aside {
+  max-width: 78ch;
+  margin: .4rem 0 0;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.hero-aside em { font-style: italic; color: var(--body); }
+
+.thesis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+  margin-top: 1.2rem;
+}
+
+/* Right-hand "1 path" callout — typography only */
+.thesis-panel {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--body);
+}
+
+.thesis-panel p,
+.thesis-panel li { color: var(--body); }
+.thesis-panel strong { color: var(--ink); }
+
+.hero-stat {
+  display: block;
+  margin-bottom: .4rem;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: .95;
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: 1fr .15fr 1fr;
+  gap: .85rem;
+  align-items: stretch;
+  margin-top: 1.2rem;
+}
+
+.choice .or {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 2.4rem;
+  align-items: start;   /* both columns start on the same line */
+  margin-top: 2rem;
+}
+
+.split > * { min-width: 0; }
+
+/* ─────────────────────── Ladder / Security-list / Path ─────────────────────── */
+.ladder { display: grid; gap: .55rem; margin-top: 1rem; }
+
+/* Ladder rungs: label + line, no card */
+.rung {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 1.1rem;
+  align-items: baseline;
+  padding: .55rem 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.rung:last-child { border-bottom: 0; }
+
+.rung strong {
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 1.02rem;
+}
+
+.rung p { margin: 0; font-size: .95rem; }
+
+.security-list { display: grid; gap: .35rem; margin-top: .9rem; }
+
+/* Security list: bare items with a tiny check, no card box */
+.security-item {
+  display: grid;
+  grid-template-columns: 1.4rem 1fr;
+  gap: .65rem;
+  align-items: start;
+  padding: .25rem 0;
+  background: transparent;
+  border: 0;
+}
+
+.security-item strong {
+  display: block;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.security-item p {
+  margin: .15rem 0 0;
+  font-size: .88rem;
+  line-height: 1.35;
+}
+
+.check {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-weight: 900;
+  font-size: .7rem;
+  margin-top: .15rem;
+}
+
+.path {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.4rem;
+  margin-top: 1.2rem;
+}
+
+/* Path steps: no card, numbered/typographic only */
+.path-step {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+.path-step strong {
+  display: block;
+  color: var(--ink);
+  font-size: 1rem;
+  margin-bottom: .25rem;
+}
+
+.path-step p { margin: 0; font-size: .85rem; color: var(--body); }
+
+/* ─────────────────────── Timeline graphic ─────────────────────── */
+.timeline {
+  list-style: none;
+  margin: 1.8rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  position: relative;
+}
+
+/* Connector line behind the dots — spans from first dot centre to last */
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 8px;             /* aligned with centre of 16px dots */
+  left: 12.5%;          /* centre of first column */
+  right: 12.5%;         /* centre of last column */
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  z-index: 0;
+}
+
+.timeline li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 1.1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.tl-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--paper);     /* ring so the line looks broken at each dot */
+  margin-bottom: 1rem;
+}
+
+.timeline li:nth-child(2) .tl-dot { background: var(--accent-2); }
+.timeline li:nth-child(3) .tl-dot { background: var(--accent); }
+.timeline li:nth-child(4) .tl-dot { background: var(--ink); }
+
+.timeline strong {
+  display: block;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: .35rem;
+}
+
+.timeline p {
+  margin: 0;
+  color: var(--body);
+  font-size: .88rem;
+  line-height: 1.4;
+}
+
+/* ─────────────────────── Video / placeholder / screen-note ─────────────────────── */
+.video {
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: #111820;
+}
+
+.video iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+
+.video.feature {
+  max-width: 58%;
+  margin: 0 auto;
+}
+
+.video.feature iframe { aspect-ratio: 16 / 9; }
+
+.slidev-layout .caption {
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.placeholder {
+  min-height: 280px;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  text-align: center;
+  background: transparent;
+  border: 1.5px dashed var(--rule);
+  border-radius: 8px;
+}
+
+.placeholder strong {
+  display: block;
+  margin-bottom: .45rem;
+  color: var(--ink);
+  font-size: 1.2rem;
+}
+
+.placeholder p { color: var(--muted); font-size: .9rem; }
+
+/* Bezel-style frame for embedded screenshots */
+.screen-frame {
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 var(--rule),
+    0 16px 36px rgba(27, 34, 48, .10),
+    0 4px 10px rgba(27, 34, 48, .06);
+  background: var(--paper);
+}
+
+.screen-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.screen-note {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font-size: 1.05rem;
+}
+
+.screen-note p { margin-top: 0; }
+
+.screen-note h3 { margin-bottom: .35rem; }
+
+.screen-note ul {
+  display: grid;
+  gap: .5rem;
+  margin-top: 1rem;
+  padding-left: 1.1rem;
+}
+
+.screen-note li { line-height: 1.35; }
+
+/* "Band" → typography callout, no dark box (PDF style: code stays on white) */
+.band {
+  padding: 0;
+  background: transparent;
+  color: var(--body);
+}
+
+.band h1,
+.band h2,
+.band h3 { color: var(--ink); }
+
+.band p,
+.band li { color: var(--body); }
+
+.band pre { margin-top: .9rem; }
+
+/* ─────────────────────── TLDR mono callout ─────────────────────── */
+.tldr {
+  margin-top: 1.4rem;
+  padding: .9rem 1.1rem;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: .95rem;
+  line-height: 1.45;
+  border-left: 3px solid var(--accent);
+}
+
+/* ─────────────────────── Code blocks ─────────────────────── */
+.slidev-layout pre {
+  border-radius: 10px;
+  font-size: .92rem !important;
+}
+
+.slidev-layout .code-note {
+  margin-top: 1rem;
+  font-size: .95rem;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-top: .85rem;
+}
+
+.badge {
+  padding: .3rem .55rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: .72rem;
+  font-weight: 800;
+}
+
+.leadline {
+  max-width: 940px;
+  margin-top: .8rem;
+  color: var(--body);
+  font-size: 1.35rem;
+  line-height: 1.25;
+}
+
+.leadline strong { color: var(--accent); }
+
+/* ─────────────────────── Slide panel (global-top.vue) ─────────────────────── */
+html #page-root,
+html.dark #page-root {
+  --slidev-slide-container-background: var(--stage);
+  background: var(--stage);
+  box-sizing: border-box;
+  padding-left: calc(var(--deck-sidebar-w, 0px) + var(--deck-stage-pad, 0px));
+  padding-right: var(--deck-stage-pad, 0px);
+  padding-bottom: var(--deck-notes-h, 0px);
+  transition: padding .22s cubic-bezier(.2, .8, .2, 1);
+}
+
+.deck-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-right: 1px solid var(--rule);
+  font-family: var(--font-body);
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform .22s cubic-bezier(.2, .8, .2, 1), box-shadow .22s, visibility 0s .22s;
+}
+
+.deck-sidebar.is-shown {
+  transform: none;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+/* Hover preview floats over the slide instead of pushing it */
+.deck-sidebar.is-peek.is-shown { box-shadow: 8px 0 24px rgba(27, 34, 48, .16); }
+
+/* Thin hot zone along the left edge that reveals a hidden panel */
+.deck-sidebar-edge {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 19;
+  width: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #page-root,
+  .deck-notes,
+  .deck-sidebar { transition: none; }
+}
+
+.deck-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .6rem .75rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.deck-sidebar-actions { display: flex; gap: .15rem; }
+
+.deck-sidebar-head button,
+.deck-sidebar-head a {
+  display: grid;
+  place-items: center;
+  padding: .25rem;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.deck-sidebar-head button:hover,
+.deck-sidebar-head a:hover { background: var(--rule); color: var(--ink); }
+
+.deck-sidebar-list {
+  flex: 1;
+  margin: 0;
+  padding: .25rem 1.1rem 1rem .5rem;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.deck-sidebar-foot {
+  display: flex;
+  gap: .15rem;
+  padding: .5rem;
+  border-top: 1px solid var(--rule);
+}
+
+.deck-sidebar-foot button {
+  display: grid;
+  place-items: center;
+  padding: .35rem;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.deck-sidebar-foot button:hover { background: var(--rule); color: var(--ink); }
+.deck-sidebar-foot button.is-on { color: var(--accent); }
+
+.deck-thumb {
+  display: grid;
+  grid-template-columns: 1rem auto;
+  gap: .4rem;
+  align-items: start;
+  width: 100%;
+  margin-bottom: .6rem;
+  text-align: left;   /* buttons centre text by default; slides are left-aligned */
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.deck-thumb-no {
+  padding-top: .15rem;
+  color: var(--muted);
+  font-size: .72rem;
+  text-align: right;
+}
+
+.deck-thumb-frame {
+  overflow: hidden;
+  border: 2px solid var(--rule);
+  border-radius: 6px;
+  background: var(--paper);
+}
+
+.deck-thumb:hover .deck-thumb-frame { border-color: var(--accent-line); }
+.deck-thumb[aria-current="true"] .deck-thumb-frame { border-color: var(--accent); }
+.deck-thumb[aria-current="true"] .deck-thumb-no { color: var(--accent); font-weight: 700; }
+
+/* Small screens: the panel becomes a drawer from the bottom (opened by the
+   pill at the bottom centre) and Slidev's own nav bar is hidden. Keep the
+   breakpoint in sync with isSmallScreen in sidebar.ts. */
+.deck-drawer-trigger,
+.deck-drawer-backdrop { display: none; }
+
+@media (max-width: 767px) {
+  #page-root nav { display: none; }
+
+  .deck-sidebar {
+    top: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-right: 0;
+    border-top: 1px solid var(--rule);
+    border-radius: 14px 14px 0 0;
+    transform: translateY(100%);
+    box-shadow: 0 -8px 24px rgba(27, 34, 48, .16);
+  }
+  .deck-sidebar.is-shown { transform: none; }
+
+  .deck-sidebar-list {
+    flex: none;
+    display: flex;
+    gap: .75rem;
+    padding: .25rem .75rem 1rem;
+    overflow: auto hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+  }
+  .deck-sidebar-list li { flex: none; scroll-snap-align: center; }
+
+  .deck-thumb {
+    grid-template-columns: auto;
+    gap: .25rem;
+    margin-bottom: 0;
+  }
+  .deck-thumb-no { padding-top: 0; text-align: left; }
+
+  .deck-drawer-trigger {
+    position: fixed;
+    left: 50%;
+    bottom: calc(.75rem + var(--deck-notes-h, 0px) + env(safe-area-inset-bottom, 0px));
+    z-index: 19;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .45rem .9rem .45rem .7rem;
+    transform: translateX(-50%);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: .8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 10px rgba(27, 34, 48, .14);
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .deck-drawer-trigger.is-hidden { opacity: 0; pointer-events: none; }
+  .deck-drawer-trigger .i-carbon\:chevron-up { color: var(--muted); font-size: 1rem; }
+
+  .deck-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 19;
+    display: block;
+    background: rgba(27, 34, 48, .35);
+  }
+}
+
+/* Notes pane (components/NotesPane.vue): sits under the stage, and #page-root's
+   bottom padding (--deck-notes-h) shrinks the slide to make room. */
+.deck-notes {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: var(--deck-sidebar-w, 0px);
+  z-index: 18;
+  height: var(--deck-notes-h, 0px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  padding: .6rem 1rem .75rem;
+  background: var(--panel);
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-body);
+  transition: left .22s cubic-bezier(.2, .8, .2, 1);
+}
+
+.deck-notes-head {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.deck-notes-status { letter-spacing: 0; text-transform: none; font-weight: 500; }
+.deck-notes-status.is-error { color: var(--accent); }
+
+.deck-notes-hint { margin: 0; color: var(--muted); font-size: .8rem; }
+
+.deck-notes-text {
+  flex: 1;
+  min-height: 0;
+  resize: none;
+  padding: .5rem .65rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: .95rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+.deck-notes-text:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+body:fullscreen #page-root { --slidev-slide-container-background: #000; background: #000; }
+
+/* ─────────────────────── Text editing (edits.ts) ─────────────────────── */
+.is-editing [contenteditable] {
+  outline: 1px dashed var(--accent-line);
+  outline-offset: 2px;
+  border-radius: 3px;
+  cursor: text;
+}
+.is-editing [contenteditable]:hover { outline-color: var(--accent); }
+.is-editing [contenteditable]:focus { outline: 2px solid var(--accent); }
+
+.deck-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: rgba(27, 34, 48, .45);
+}
+
+.deck-dialog {
+  width: min(360px, calc(100vw - 2rem));
+  display: grid;
+  gap: .75rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--body);
+  font-family: var(--font-body);
+  box-shadow: 0 24px 60px rgba(27, 34, 48, .3);
+}
+.deck-dialog h2 { margin: 0; color: var(--ink); font: 800 1.25rem var(--font-heading); }
+.deck-dialog p { margin: 0; color: var(--muted); font-size: .9rem; }
+.deck-dialog label { display: grid; gap: .25rem; font-size: .85rem; font-weight: 600; color: var(--ink); }
+.deck-dialog input {
+  padding: .5rem .65rem;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+}
+.deck-dialog input:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+.deck-dialog-error { color: #b42318 !important; }
+.deck-dialog-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .25rem; }
+.deck-dialog-actions button {
+  padding: .5rem .9rem;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 600 .9rem var(--font-body);
+  cursor: pointer;
+}
+.deck-dialog-actions button.primary { border-color: var(--accent); background: var(--accent); color: var(--paper); }
+.deck-dialog-actions button:disabled { opacity: .6; cursor: default; }
+
+.deck-toast {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  z-index: 60;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: .6rem 1rem;
+  border-radius: 8px;
+  background: #b42318;
+  color: #fff;
+  font: 600 .9rem var(--font-body);
+}
+
+/* ─────────────────────── Chart (components/SlideChart.vue) ─────────────────────── */
+.chart-frame {
+  height: 270px;
+  margin-top: 1rem;
+}
+
+.slide-chart {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}

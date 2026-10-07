@@ -274,8 +274,8 @@
         </picture>
         <h1>Example projects</h1>
         <p class="lede">
-          Ready-made static sites. Pick one and it publishes to your own URL in
-          seconds, no account needed to start.
+          Ready-made sites. Pick one and it publishes to your own URL in
+          seconds. The static ones need no account to start.
         </p>
       </header>
 
@@ -340,13 +340,51 @@
               </a>
             </div>
           </li>
+          <li class="card">
+            <h2 class="card__title">
+              <a
+                href="https://app.netlify.com/drop?example=slides"
+                aria-describedby="cue-slides"
+                >Slides</a
+              >
+            </h2>
+            <small class="card__path">slides/</small>
+            <p class="card__description">
+              A Slidev deck template. Write slides in Markdown, style them with
+              one CSS file, and publish them as a site. Needs an account, since
+              it builds on publish.
+            </p>
+            <p class="card__cue" id="cue-slides" aria-hidden="true">
+              Publish this example
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </p>
+            <div class="card__footer">
+              <a
+                class="card__live"
+                href="https://github.com/netlify/netlify-drop-examples/tree/main/slides"
+                >View source on GitHub</a
+              >
+            </div>
+          </li>
         </ul>
       </main>
 
       <footer>
         <p>
-          Every example is plain HTML and CSS with no build step, so a logged-out
-          visitor can publish one straight from the browser.
+          Static examples are plain HTML and CSS with no build step, so a
+          logged-out visitor can publish one straight from the browser. Build
+          examples are built on publish and ask for an account first.
         </p>
         <p>
           Source and contribution guide on
