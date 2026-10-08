@@ -3,7 +3,6 @@
   "build": true,
   "files": [
     "package.json",
-    ".gitignore",
     "AGENTS.md",
     "README.md",
     "decks/components/DeckImg.vue",
