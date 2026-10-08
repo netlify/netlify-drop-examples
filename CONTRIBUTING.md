@@ -10,6 +10,8 @@ the [README](README.md) is all you need.
    name, so it should outlive any redesign.
 2. Put a `manifest.json` at that directory's root listing every file to publish.
    A file missing from the manifest is silently left out of the published site.
+   No hidden files: Netlify does not serve them, so the dashboard's fetch of a
+   `.gitignore` or `.nvmrc` 404s and the whole example fails to load.
 3. Declare whether it is static or a build project — see below.
 4. Add a row to the table in the README and a card to the root `index.html`.
 
@@ -48,7 +50,7 @@ directly. A logged-out one is sent to signup first — there is no anonymous
 build API — and their project is stashed in the browser and deploys once they
 have an account.
 
-Two requirements:
+Requirements:
 
 - A `package.json` at the project root. That is what detection keys off; without
   one, Drop publishes the source unbuilt.
@@ -56,6 +58,8 @@ Two requirements:
   Drop strips those when it zips the source, so such a file is silently missing
   from the build. That is a substring match, not a path segment — `mydist/` is
   caught too.
+- Pin Node with `NODE_VERSION` under `[build.environment]` in `netlify.toml`.
+  `.nvmrc` is a hidden file, so it never reaches the dashboard.
 
 ## How the dashboard uses this
 
