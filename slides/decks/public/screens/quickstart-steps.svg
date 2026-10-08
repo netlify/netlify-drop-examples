@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-label="Three-step diagram: write, preview, deploy">
+  <rect width="960" height="540" fill="#f7f8fb"/>
+  <g font-family="Inter, sans-serif" text-anchor="middle">
+    <g transform="translate(60 150)"><rect width="240" height="240" rx="16" fill="#fff" stroke="#e1e4ec"/><circle cx="120" cy="80" r="30" fill="#4f46e5" fill-opacity=".15"/><text x="120" y="92" font-size="32" font-weight="700" fill="#4f46e5">1</text><text x="120" y="160" font-size="22" font-weight="700" fill="#1b2230">Write</text><text x="120" y="190" font-size="14" fill="#667085">Slides in Markdown</text></g>
+    <g transform="translate(360 150)"><rect width="240" height="240" rx="16" fill="#fff" stroke="#e1e4ec"/><circle cx="120" cy="80" r="30" fill="#4f46e5" fill-opacity=".15"/><text x="120" y="92" font-size="32" font-weight="700" fill="#4f46e5">2</text><text x="120" y="160" font-size="22" font-weight="700" fill="#1b2230">Preview</text><text x="120" y="190" font-size="14" fill="#667085">npm run dev</text></g>
+    <g transform="translate(660 150)"><rect width="240" height="240" rx="16" fill="#fff" stroke="#e1e4ec"/><circle cx="120" cy="80" r="30" fill="#4f46e5" fill-opacity=".15"/><text x="120" y="92" font-size="32" font-weight="700" fill="#4f46e5">3</text><text x="120" y="160" font-size="22" font-weight="700" fill="#1b2230">Deploy</text><text x="120" y="190" font-size="14" fill="#667085">Push to Netlify</text></g>
+    <path d="M308 270h44M608 270h44" stroke="#8a7a68" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,8 @@
+[build]
+  command = "node scripts/build-index.mjs && node scripts/build-decks.mjs"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # playwright-chromium is only needed for `npm run export`; skip its browser download on Netlify.
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
