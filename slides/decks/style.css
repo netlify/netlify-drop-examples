@@ -1008,6 +1008,14 @@ html.dark #page-root {
 .deck-thumb[aria-current="true"] .deck-thumb-frame { border-color: var(--accent); }
 .deck-thumb[aria-current="true"] .deck-thumb-no { color: var(--accent); font-weight: 700; }
 
+/* Slidev's nav bar (it fades in on hover at the bottom left) is hidden, apart
+   from the edit controls from custom-nav-controls.vue: the panel covers
+   fullscreen, present, dark mode and slide navigation. With nothing to edit
+   the whole bar goes. */
+#page-root nav > div > :not(.deck-nav-actions) { display: none; }
+.deck-nav-actions { display: contents; }
+#page-root nav:not(:has(.deck-nav-actions > *)) { display: none; }
+
 /* Small screens: the panel becomes a drawer from the bottom (opened by the
    pill at the bottom centre) and Slidev's own nav bar is hidden. Keep the
    breakpoint in sync with isSmallScreen in sidebar.ts. */
