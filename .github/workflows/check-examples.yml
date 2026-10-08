@@ -103,6 +103,17 @@ jobs:
               fi
             fi
 
+            # Netlify does not serve hidden files, so the dashboard's fetch of a
+            # listed dotfile 404s and the whole example fails to load.
+            hidden=$(git ls-files "$dir" | sed "s|^$dir/||" | grep -v '^manifest\.json$' | grep -E '(^|/)\.' || true)
+            if [ -n "$hidden" ]; then
+              echo "::error::$dir contains hidden files, which Netlify does not serve:"
+              echo "$hidden" | sed 's/^/    /'
+              echo "  The dashboard fetches every listed file; one 404 fails the example."
+              echo "  Pin Node with NODE_VERSION in netlify.toml instead of .nvmrc."
+              failed=1
+            fi
+
             if ! listed=$(node -e "
               try {
                 const m = JSON.parse(require('fs').readFileSync('$manifest', 'utf8'));
