@@ -79,6 +79,7 @@
     "src/data/events.ts",
     "src/data/records.test.ts",
     "src/data/records.ts",
+    "src/db/client.test.ts",
     "src/db/client.ts",
     "src/db/schema.ts",
     "src/db/soft-delete.ts",

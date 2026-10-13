@@ -181,3 +181,22 @@ export function getRetentionDays(): number {
   }
   return days
 }
+
+/**
+ * Connection details for Netlify Database, read from the env vars Netlify
+ * sets on every deploy. `NETLIFY_DB_URL` is provisioned by the platform
+ * (`@netlify/database`), never by hand. `NETLIFY_DB_DRIVER=server` means a
+ * plain TCP Postgres connection (local `netlify dev`); anything else uses the
+ * serverless HTTP driver. Only called from `src/db/client.ts`, and only when a
+ * real database is expected, so demo mode never trips the throw below.
+ */
+export function getDatabaseConnection(): { url: string; useServerDriver: boolean } {
+  const url = process.env.NETLIFY_DB_URL
+  if (!url) {
+    throw new Error(
+      'NETLIFY_DB_URL is not set. Netlify provisions it when @netlify/database is installed; ' +
+        'run `netlify database init` or redeploy. See README > Database.',
+    )
+  }
+  return { url, useServerDriver: process.env.NETLIFY_DB_DRIVER === 'server' }
+}
