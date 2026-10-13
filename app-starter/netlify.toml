@@ -1,0 +1,27 @@
+[build]
+  command = "npm run build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# No SPA catch-all redirect is needed — TanStack Start's Netlify adapter
+# (@netlify/vite-plugin-tanstack-start) configures server-rendered routing
+# and the Netlify Function that serves it automatically at build time.
+
+# --- Role-based redirects (auth) -------------------------------------------
+# Uncomment to gate a path by Identity role once Identity is enabled. Netlify
+# REQUIRES a catch-all fallback redirect whenever you use role-based
+# redirects, or every other route will 404 — the second block below is
+# mandatory, not optional, if you uncomment the first.
+#
+# [[redirects]]
+#   from = "/admin/*"
+#   to = "/admin/:splat"
+#   status = 200
+#   conditions = { Role = ["admin"] }
+#
+# [[redirects]]
+#   from = "/*"
+#   to = "/:splat"
+#   status = 200
