@@ -43,6 +43,11 @@ export const appConfig = {
   // taxonomy calls its top role, or remove the admin section entirely. See
   // README > Roles for the generic RBAC mechanism this plugs into.
   adminRole: 'admin',
+  // The role every signup gets, except the very first (which becomes
+  // `adminRole`). The `DEFAULT_ROLE` env var overrides it, so a vertical with
+  // its own taxonomy can set one without touching code — see
+  // `getDefaultRole()` in `src/config/flags.ts`.
+  defaultRole: 'member',
   // The Netlify site ID of the canonical public demo. That one deploy runs on
   // sample data and shows a "Make this app yours" badge (see
   // `src/components/setup-prompt.tsx`); every other deploy uses the real

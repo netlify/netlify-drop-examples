@@ -61,14 +61,13 @@ function dismiss() {
  * checkable row is done, and stays dismissed across reloads via localStorage.
  */
 export function GoLiveChecklist() {
-  const { authEnabled, deployed, user } = useAppContext()
+  const { authEnabled, deployed } = useAppContext()
   // The server snapshot is `true` so the checklist never flashes during SSR
   // or hydration for someone who already dismissed it.
   const dismissed = useSyncExternalStore(subscribe, readDismissed, () => true)
   const [dismissedForNow, setDismissedForNow] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
 
-  const isAdmin = !!user?.roles.includes(appConfig.adminRole)
   const identityAction = deployed
     ? { label: 'Open Identity settings', href: IDENTITY_SETTINGS_URL }
     : undefined
@@ -93,20 +92,9 @@ export function GoLiveChecklist() {
       summary: 'Require people to log in.',
       steps: [
         'Enable Identity in the Netlify dashboard. The app picks it up within a minute.',
-        'Set `DEFAULT_ROLE` in your site environment variables before enabling signups.',
+        `Then sign up at /login before sharing the URL. The first person to sign up becomes the admin (the "${appConfig.adminRole}" role, which unlocks the audit log and usage events), and everyone after gets "${appConfig.defaultRole}".`,
       ],
       done: authEnabled,
-      action: identityAction,
-    },
-    {
-      id: 'admin',
-      title: 'Make yourself the admin',
-      summary: 'The first person to sign up becomes the admin.',
-      steps: [
-        'Sign up at /login before sharing the URL with anyone else.',
-        `Admins hold the "${appConfig.adminRole}" role, which unlocks the audit log and usage events.`,
-      ],
-      done: authEnabled && isAdmin,
       action: identityAction,
     },
     {

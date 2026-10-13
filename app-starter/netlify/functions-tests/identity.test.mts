@@ -104,4 +104,15 @@ describe('identity signup hook', () => {
 
     expect(result?.user.appMetadata?.roles).toEqual(['member'])
   })
+
+  it('assigns the built-in member role when DEFAULT_ROLE is not set', async () => {
+    delete process.env.DEFAULT_ROLE
+    delete process.env.ALLOWED_SIGNUP_DOMAIN
+    listUsers.mockResolvedValue([{ id: 'existing' }])
+    const event = fakeEvent('someone@example.com')
+
+    const result = await identity.userSignup(event as never)
+
+    expect(result?.user.appMetadata?.roles).toEqual(['member'])
+  })
 })

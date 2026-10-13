@@ -4,32 +4,29 @@ import { appConfig } from '../../src/config/app'
 import { hasAnyUsers } from '../../src/auth/first-user'
 
 /**
- * Netlify Identity signup event hook. Assigns `DEFAULT_ROLE` to every new
- * user's `app_metadata.roles` at signup time, so a vertical never has to
- * manually assign a starting role to every signup from the Identity
- * dashboard. Also enforces `ALLOWED_SIGNUP_DOMAIN`, if set — see
- * `getAllowedSignupDomain()` (`src/config/flags.ts`) for why that check is
- * optional rather than fail-loud like `DEFAULT_ROLE`.
+ * Netlify Identity signup event hook. Assigns a role to every new user's
+ * `app_metadata.roles` at signup time, so a vertical never has to manually
+ * assign a starting role to every signup from the Identity dashboard. Also
+ * enforces `ALLOWED_SIGNUP_DOMAIN`, if set.
  *
- * The very first successful signup gets `appConfig.adminRole` instead of
- * `DEFAULT_ROLE` (see `hasAnyUsers()`), so a non-technical person deploying
- * this template doesn't have to find Identity → Users → Roles in the Netlify
- * dashboard just to administer their own site. This has two windows worth
- * knowing about: two people signing up in the same instant could both read
- * zero existing users and both become admin, and — on open signups — whoever
- * signs up first (not necessarily the deployer) claims it. README > Roles
- * tells deployers to sign up immediately after deploying, before sharing the
- * URL, to close the second window.
+ * The very first successful signup gets `appConfig.adminRole` (see
+ * `hasAnyUsers()`), so a non-technical person deploying this template doesn't
+ * have to find Identity → Users → Roles in the Netlify dashboard just to
+ * administer their own site. Everyone after that gets `getDefaultRole()`:
+ * `DEFAULT_ROLE` if set, otherwise `appConfig.defaultRole`, so no env var is
+ * needed to get going. The app can't tell who deployed it (that needs a
+ * Netlify API token a running site doesn't have), so "first signup" is the
+ * claim. Two windows are worth knowing about: two people signing up in the
+ * same instant could both read zero existing users and both become admin,
+ * and on open signups whoever signs up first (not necessarily the deployer)
+ * claims it. README > Roles tells deployers to sign up right after enabling
+ * Identity to close the second window.
  *
  * Role membership always lives in `app_metadata` (never `user_metadata`) —
  * `user_metadata` is user-editable via the Identity API, so a role stored
  * there would be a privilege-escalation hole. This hook only ever touches
  * `appMetadata` (the camelCase field name in this event payload, which maps
  * to `app_metadata` in the Identity API).
- *
- * Throws (via `getDefaultRole()`) if `DEFAULT_ROLE` isn't configured, which
- * fails the signup loudly rather than silently assigning a made-up role
- * name. See README > Roles.
  */
 const userSignup: UserSignupHandler = async (event) => {
   const allowedDomain = getAllowedSignupDomain()

@@ -95,7 +95,7 @@ describe('SetupPrompt', () => {
 
   it('has no Identity link when not deployed', () => {
     render(<SetupPrompt />)
-    for (const title of [/Turn on sign-in/, /Make yourself the admin/, /Choose who can sign up/]) {
+    for (const title of [/Turn on sign-in/, /Choose who can sign up/]) {
       fireEvent.click(screen.getByRole('button', { name: title }))
       expect(screen.queryByRole('link', { name: 'Open Identity settings' })).toBeNull()
       fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0])

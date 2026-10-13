@@ -59,14 +59,15 @@ is open to anyone with the URL until you enable Identity. The in-app
 3. If this app should be private, enable Identity in the Netlify dashboard.
    The app notices within about a minute, with no redeploy, and visitors are
    then sent to `/login` until they sign in.
-4. Set `DEFAULT_ROLE` on the environment variables page before enabling
-   signups: `https://app.netlify.com/projects/{sitename}/configuration/env`.
-   Then sign up yourself at `/login` right away, **before** sharing the URL
-   with anyone else — the first person to sign up automatically becomes the
-   site admin (see "Roles" below), so signing up first is how you claim that
-   account. After that, invite everyone else from the Identity tab, or leave
-   public signups on if that's what your site needs.
-5. Optional setup lives on that same environment variables page:
+4. Sign up yourself at `/login` right away, **before** sharing the URL with
+   anyone else — the first person to sign up automatically becomes the site
+   admin (see "Roles" below), so signing up first is how you claim that
+   account. Everyone after gets the `member` role with no configuration.
+   Invite everyone else from the Identity tab, or leave public signups on if
+   that's what your site needs.
+5. Optional setup lives on the environment variables page,
+   `https://app.netlify.com/projects/{sitename}/configuration/env`:
+   `DEFAULT_ROLE` to change the role new signups get,
    `ALLOWED_SIGNUP_DOMAIN` for signup restrictions,
    `PURGE_ENABLED`/`RECORD_RETENTION_DAYS` for permanent deletion of
    soft-deleted records, and notification keys for Slack or email.
@@ -86,13 +87,12 @@ UX nudge, not access control: it links to dashboard pages and exposes no data.
 
 Steps:
 
-1. **Sign in** — enable Identity in the Netlify dashboard.
+1. **Sign in** — enable Identity in the Netlify dashboard, then sign up
+   before sharing the URL; the first signup becomes the admin.
 2. **Domain** — decide who can sign up: set `ALLOWED_SIGNUP_DOMAIN` (exact
    domain, enforced by the signup hook in `netlify/functions/identity.mts`),
    and/or turn off open signups and invite people from the Identity tab.
-3. **Admin** — sign up first, before sharing the URL; the first signup becomes
-   the admin. This step stays unchecked until real sign-in is on.
-4. **Rebrand** — edit `src/config/app.ts` and swap `public/logo.svg`.
+3. **Rebrand** — edit `src/config/app.ts` and swap `public/logo.svg`.
 
 To remove it, delete `src/components/setup-prompt.tsx`,
 `src/components/go-live-checklist.tsx` and
@@ -130,16 +130,16 @@ vertical — full detail is in the linked section, this is just orientation.
 
 ## Environment variables
 
-| Variable                                                 | Default | Purpose                                                                                                                                                      |
-| -------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `NETLIFY_DB_URL`                                         | —       | Set automatically by `@netlify/database` / `netlify database init`. Don't set by hand.                                                                       |
-| `AUTH_DEV_USER`                                          | —       | Local-dev-only fake session, e.g. `{"email":"you@example.com","roles":["admin"]}`. Turns auth on only when running under `netlify dev` (`NETLIFY_DEV=true`). |
-| `DEFAULT_ROLE`                                           | —       | Required once signups are enabled — the role assigned to new users at signup. See "Roles" below. No default; signups fail loudly until this is set.          |
-| `ALLOWED_SIGNUP_DOMAIN`                                  | —       | Optional — restricts signups to one exact email domain (no subdomains). Unset means no restriction. See "Roles" below.                                       |
-| `PURGE_ENABLED`                                          | `false` | `true` turns on permanent deletion of already soft-deleted records. Off is genuinely inert — no purge job runs. See "Soft delete" below.                     |
-| `RECORD_RETENTION_DAYS`                                  | —       | Required once `PURGE_ENABLED=true` — days a soft-deleted record is kept before permanent purge. No default; purge fails loudly until this is set.            |
-| `SLACK_WEBHOOK_URL`                                      | —       | Enables the `slack` notify channel.                                                                                                                          |
-| `RESEND_API_KEY`, `NOTIFY_EMAIL_FROM`, `NOTIFY_EMAIL_TO` | —       | Enables the `email` notify channel (via [Resend](https://resend.com)).                                                                                       |
+| Variable                                                 | Default  | Purpose                                                                                                                                                        |
+| -------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NETLIFY_DB_URL`                                         | —        | Set automatically by `@netlify/database` / `netlify database init`. Don't set by hand.                                                                         |
+| `AUTH_DEV_USER`                                          | —        | Local-dev-only fake session, e.g. `{"email":"you@example.com","roles":["admin"]}`. Turns auth on only when running under `netlify dev` (`NETLIFY_DEV=true`).   |
+| `DEFAULT_ROLE`                                           | `member` | Optional — the role assigned to new users at signup (the very first signup becomes the admin instead). Defaults to `appConfig.defaultRole`. See "Roles" below. |
+| `ALLOWED_SIGNUP_DOMAIN`                                  | —        | Optional — restricts signups to one exact email domain (no subdomains). Unset means no restriction. See "Roles" below.                                         |
+| `PURGE_ENABLED`                                          | `false`  | `true` turns on permanent deletion of already soft-deleted records. Off is genuinely inert — no purge job runs. See "Soft delete" below.                       |
+| `RECORD_RETENTION_DAYS`                                  | —        | Required once `PURGE_ENABLED=true` — days a soft-deleted record is kept before permanent purge. No default; purge fails loudly until this is set.              |
+| `SLACK_WEBHOOK_URL`                                      | —        | Enables the `slack` notify channel.                                                                                                                            |
+| `RESEND_API_KEY`, `NOTIFY_EMAIL_FROM`, `NOTIFY_EMAIL_TO` | —        | Enables the `email` notify channel (via [Resend](https://resend.com)).                                                                                         |
 
 See `env.example` for a copy-pasteable starting point. It is not a dotfile, so
 Netlify Drop can fetch it; copy it to `.env` if you want a local env file.
@@ -164,12 +164,11 @@ The app ships with auth **off**. To turn it on:
    it up within about a minute, no redeploy needed. There is no auth env var
    to set. If that check can't be completed (an outage, a password-protected
    deploy), the app assumes Identity is on rather than leave itself open.
-3. Set `DEFAULT_ROLE` (e.g. `member`) as a site environment variable —
-   `netlify/functions/identity.mts` assigns it to every new signup's
-   `app_metadata.roles`. Signups fail loudly until this is set.
-4. Sign up yourself at `/login` before inviting anyone else — the very first
-   signup automatically becomes the admin instead of getting `DEFAULT_ROLE`
-   (see "Roles" below). After that, invite users from the Identity tab, or
+3. Sign up yourself at `/login` before inviting anyone else — the very first
+   signup automatically becomes the admin (see "Roles" below). Everyone after
+   gets the `member` role, assigned by `netlify/functions/identity.mts`. No
+   environment variable is needed; set `DEFAULT_ROLE` only to use a
+   different role name. After that, invite users from the Identity tab, or
    let them sign up directly if signups are enabled in your Identity
    settings. Promote specific users beyond the default role from the
    Identity tab (`roles` land in `app_metadata.roles`, never
@@ -184,7 +183,7 @@ With auth on:
   Recovery finishes with `updateUser({ password })`; invites finish with
   `acceptInvite(token, password)`. See `src/auth/client.tsx`'s
   `useAuthCallback`/`ResetPasswordForm` for how the two flows are told apart.
-- Every new signup gets `DEFAULT_ROLE` in `app_metadata.roles` automatically,
+- Every new signup gets the default role in `app_metadata.roles` automatically,
   except the very first, which becomes the admin (see "Roles" below) — no
   manual dashboard step required for the common case.
 - Every route under `/records` and `/admin` redirects anonymous visitors to
@@ -233,21 +232,24 @@ Identity dashboard's "Roles" field writes, and what `netlify.toml`'s
 **Assigning roles:**
 
 - **At signup**: `netlify/functions/identity.mts` is an Identity signup
-  event hook that assigns `DEFAULT_ROLE` (required, see "Environment
-  variables" above) to every new user's `app_metadata.roles` automatically.
+  event hook that assigns the default role to every new user's
+  `app_metadata.roles` automatically: `DEFAULT_ROLE` if set (see "Environment
+  variables" above), otherwise `appConfig.defaultRole` (`member`).
   Identity event hooks only fire against a real deploy with Identity
   enabled — not under `netlify dev`.
 - **The first signup becomes the admin**: the same hook checks
   `hasAnyUsers()` (`src/auth/first-user.ts`, backed by the Identity admin
   API's `listUsers()`) and assigns `appConfig.adminRole` instead of
-  `DEFAULT_ROLE` when nobody has signed up yet. This exists so a
+  the default role when nobody has signed up yet. This exists so a
   non-technical person deploying the template can administer their own site
-  without ever opening the Identity dashboard. It has a race window (two
+  without ever opening the Identity dashboard. The app can't tell who
+  deployed it (that takes a Netlify API token a running site doesn't have),
+  so "first signup" is the claim. It has a race window (two
   people signing up in the same instant could both become admin) and, on
   open signups, a land-grab window (whoever signs up first — not necessarily
   the deployer — claims it) — see "After deploying to your account" above
   for closing the second one by signing up immediately. If the `listUsers()`
-  check itself fails, the hook falls back to `DEFAULT_ROLE` rather than risk
+  check itself fails, the hook falls back to the default role rather than risk
   granting admin on an unconfirmed read. `/login`'s signup form shows a
   "you'll be the site admin" notice while this condition holds (see
   `src/server/first-user.ts` / `src/auth/client.tsx`).
@@ -255,10 +257,8 @@ Identity dashboard's "Roles" field writes, and what `netlify.toml`'s
   `ALLOWED_SIGNUP_DOMAIN` — set it to one exact email domain (e.g.
   `acme.com`) and any signup whose email domain doesn't match exactly (no
   subdomains) is denied via `event.deny()` before a role is ever assigned.
-  Unlike `DEFAULT_ROLE`, this is optional rather than fail-loud: the hook
-  has no way to know whether Identity's "open signups" setting is even on,
-  so it can't force every deployment to configure it. Unset (the default)
-  means no restriction — correct for invite-only setups, where every
+  It's optional: the hook has no way to know whether Identity's "open
+  signups" setting is even on. Unset (the default) means no restriction — correct for invite-only setups, where every
   signup already comes from a trusted invite rather than open self-signup.
 - **Beyond the first admin and the default**: promote specific users to
   additional roles from the Identity tab in the Netlify dashboard (Users →
