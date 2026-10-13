@@ -26,6 +26,7 @@ Either way you end up with a real, public site of your own.
 | ----------------------------- | ---------------------------------------------------------------- |
 | [Link in bio](link-in-bio/) | One page for your name, a short bio, and every link you hand out |
 | [Slides](slides/)           | A deck template: write slides in Markdown, publish them as a site. Needs an account to build |
+| [App starter](app-starter/) | A records app with sample data, a dashboard, and optional sign-in. Needs an account to build |
 
 More are on the way.
 
