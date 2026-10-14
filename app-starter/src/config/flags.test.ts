@@ -167,19 +167,19 @@ describe('getDefaultRole', () => {
     delete process.env.DEFAULT_ROLE
   })
 
-  it('throws when DEFAULT_ROLE is unset', () => {
+  it('falls back to the configured app default when DEFAULT_ROLE is unset', () => {
     delete process.env.DEFAULT_ROLE
-    expect(() => getDefaultRole()).toThrow(/DEFAULT_ROLE is not set/)
+    expect(getDefaultRole()).toBe(appConfig.defaultRole)
   })
 
-  it('throws when DEFAULT_ROLE is an empty string', () => {
-    process.env.DEFAULT_ROLE = ''
-    expect(() => getDefaultRole()).toThrow(/DEFAULT_ROLE is not set/)
+  it('falls back when DEFAULT_ROLE is empty or whitespace', () => {
+    process.env.DEFAULT_ROLE = '  '
+    expect(getDefaultRole()).toBe(appConfig.defaultRole)
   })
 
   it('returns the configured value', () => {
-    process.env.DEFAULT_ROLE = 'member'
-    expect(getDefaultRole()).toBe('member')
+    process.env.DEFAULT_ROLE = ' staff '
+    expect(getDefaultRole()).toBe('staff')
   })
 })
 

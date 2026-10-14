@@ -14,7 +14,7 @@ apps. Read this before making changes.
   `DEMO_MODE` env var or infer it from `NETLIFY_DB_URL`. Tests rely on
   `SITE_ID` being unset to stay in-memory.
 - **One flag controls each non-demo toggle**: `DEFAULT_ROLE` (role assigned
-  at signup, required once signups are enabled), `ALLOWED_SIGNUP_DOMAIN`
+  at signup; optional, defaults to `appConfig.defaultRole`), `ALLOWED_SIGNUP_DOMAIN`
   (optional — restricts signups to one exact email domain, no subdomains),
   and `PURGE_ENABLED`/`RECORD_RETENTION_DAYS` (hard purge of soft-deleted
   records — off by default, `RECORD_RETENTION_DAYS` required once
