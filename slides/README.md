@@ -87,8 +87,7 @@ class: hero-slide
 The deck opens with a thumbnail panel on the left. Click a thumbnail to jump to
 that slide.
 
-- Press `b`, use the panel icon in the nav bar, or use the button at the top of
-  the panel to hide or show it. The choice is remembered in the browser.
+- Press `b` or use the button at the top of the panel to hide or show it. The choice is remembered in the browser.
 - While the panel is hidden, move the pointer to the left edge of the window to
   preview it over the slide. The pin button at the top of the preview keeps it
   open.
@@ -97,11 +96,11 @@ that slide.
   jumps without animation.
 - Press `p` or click the play button at the top of the panel to present: the deck
   goes fullscreen from the current slide.
-- Press `f` or use the fullscreen button in the nav bar to toggle fullscreen. The
+- Press `f` to toggle fullscreen. The
   panel hides while fullscreen.
 - On screens narrower than 768px the panel becomes a drawer from the bottom.
   Tap the slide-number pill to open it; Slidev's own nav bar is hidden there.
-  The nav bar's edit buttons are hidden with it, so text editing needs a wider screen.
+  The edit buttons are hidden with it, so text editing needs a wider screen.
 - Notes: signed-in editors see a notebook icon in the panel footer (in the
   drawer header on small screens). It opens a notes pane along the bottom of the
   page, and the slide shrinks to fit. Type a note for the slide and click away or
@@ -112,6 +111,10 @@ that slide.
   heading). Moving a slide keeps its note; renaming it detaches the note, so the
   pane shows it as an earlier note and saving re-attaches it.
 - The panel does not appear in the overview (`o`) or in exported PDFs.
+
+Slidev's own nav bar, which fades in at the bottom left on hover, is hidden
+(`style.css`). Only the edit buttons stay in it, and only when Netlify Identity is
+on, so with editing off there is no bar at all.
 
 Slidev's right-click menu is turned off (`contextMenu: false`), so right-click
 opens the browser's own menu.
@@ -155,7 +158,7 @@ the pencil is hidden.
 ## Dark mode
 
 The deck follows the system colour scheme. The sun/moon button at the bottom of the
-slide panel (and the sun/moon in the nav bar) flips it, and the choice is remembered in the browser. Slidev adds a `dark` class to the page, and the `html.dark` block in
+slide panel flips it, and the choice is remembered in the browser. Slidev adds a `dark` class to the page, and the `html.dark` block in
 `style.css` swaps the tokens. The chart redraws when the scheme changes. To pin
 one scheme, set `colorSchema: light` or `colorSchema: dark` in the deck's
 headmatter.

@@ -15,8 +15,7 @@ This repo is a Slidev deck template. It is not an app.
   must stay in `decks/`: Slidev only reads them from the deck folder.
 - **Layout classes** are listed in `README.md`. Reuse them before adding new CSS.
 - **Slide panel** (thumbnail sidebar) lives in `decks/global-top.vue`, with its
-  state in `decks/sidebar.ts`, the toggle in `decks/custom-nav-controls.vue` and
-  the `b` shortcut in `decks/setup/shortcuts.ts`. Its styles are at the end of `style.css`. It imports
+  state in `decks/sidebar.ts` and the `b` shortcut in `decks/setup/shortcuts.ts`. Its styles are at the end of `style.css`. It imports
   Slidev client internals (`@slidev/client/...`), so re-check it after any
   Slidev upgrade. Presenter mode is off (`presenter: false`).
 - **Build** with `npm run build`: `scripts/build-index.mjs` writes the home page,
@@ -26,7 +25,8 @@ This repo is a Slidev deck template. It is not an app.
   and `notes.mts` (Blobs, sharing `netlify/lib/store.mts`) and `identity.mts`, with the
   client in `decks/edits.ts`, `decks/notes.ts`, `edits-core.ts`,
   `decks/components/EditLogin.vue`, `decks/components/NotesPane.vue` and the nav
-  button in `decks/custom-nav-controls.vue`. Edits are an overlay keyed by a hash
+  edit buttons in `decks/custom-nav-controls.vue` (Slidev's own nav bar is hidden
+  in `style.css`; only these stay, and the bar is hidden when they are absent). Edits are an overlay keyed by a hash
   of the original text; the deck file is never rewritten, and edits are stored per
   deck. Notes are keyed by slide number plus a hash of the slide's title, and
   unlike edits they are readable only by logged-in editors. Both are off by
