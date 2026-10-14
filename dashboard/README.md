@@ -90,8 +90,11 @@ Netlify Database path automatically.
 
 ## After deploying to your account
 
-Your deployed project is no longer the public demo. It uses live data, and it
-is open to anyone with the URL until you enable Identity.
+Your deployed project is no longer the public demo. It uses live data, so it
+**fails closed**: until Netlify Identity is enabled, the dashboard and `/data`
+show a "Netlify Identity must be enabled" error instead of any data. Set
+`DATA_ENCRYPTION_KEY` too (see Environment variables), or loads and reads
+fail.
 
 1. Open the Netlify project overview:
    `https://app.netlify.com/projects/{sitename}`
@@ -99,9 +102,9 @@ is open to anyone with the URL until you enable Identity.
    uses the database automatically; you do not need to set `NETLIFY_DB_URL`
    by hand. If you connect the database after the first deploy, redeploy the
    site so migrations run before you add records.
-3. If this app should be private, enable Identity in the Netlify dashboard,
-   then redeploy. After that, visitors are sent to `/login` until they sign
-   in.
+3. Enable Identity in the Netlify dashboard, then redeploy. This is
+   required, not optional: the data is Tier 2, so nothing is served without
+   it. After that, visitors are sent to `/login` until they sign in.
 4. Set `DEFAULT_ROLE` on the environment variables page before enabling
    signups: `https://app.netlify.com/projects/{sitename}/configuration/env`.
    Then sign up yourself at `/login` right away, **before** sharing the URL
