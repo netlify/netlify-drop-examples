@@ -1,0 +1,526 @@
+# Pulse — HR survey app
+
+A TanStack Start + shadcn/ui application, forked from the
+[App starter](../app-starter/) base template, that deploys to Netlify in one
+command, runs on sample data locally and on the canonical public demo project
+(in-memory, no database or auth required), and turns on real authentication
+automatically when Netlify Identity is enabled for a deployed project.
+
+## Quick start
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000. Locally the app runs on sample data: the home
+page, survey list, and forms all work against an in-memory dataset that resets
+on every restart. Nothing to configure.
+
+## Publish it with Netlify Drop
+
+Pick this project on [Netlify Drop](https://app.netlify.com/drop?example=survey).
+Drop detects the TanStack Start setup and builds it for you. This project needs
+a build, so you will be asked to sign up or log in first; your project is kept
+and deploys as soon as you have an account. Your copy is not the public demo:
+it uses Netlify Database and is open to anyone with the URL until you enable
+Identity, so read [After deploying to your account](#after-deploying-to-your-account)
+next.
+
+## One-command deploy
+
+```bash
+netlify init      # links this repo to a new or existing Netlify project
+netlify deploy --build --prod
+```
+
+Or click:
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/gehrig-netlify/app-pack-hr-survey)
+
+The build (`npm run build`) and publish directory (`dist/client`) are already
+configured in `netlify.toml`. The canonical public demo stays on sample data
+for public evaluation; your own deployed project uses Netlify Database
+automatically.
+
+## After deploying to your account
+
+Your deployed project is no longer the public demo. It uses live data, and it
+is open to anyone with the URL until you enable Identity. The in-app
+[Go live checklist](#go-live-checklist) walks through the steps below.
+
+1. Open the Netlify project overview:
+   `https://app.netlify.com/projects/{sitename}`
+2. Confirm Netlify Database is connected under **Data & storage**. The app
+   uses the database automatically; you do not need to set `NETLIFY_DB_URL`
+   by hand. If you connect the database after the first deploy, redeploy the
+   site so migrations run before you add records.
+3. If this app should be private, enable Identity in the Netlify dashboard.
+   The app notices within about a minute, with no redeploy, and visitors are
+   then sent to `/login` until they sign in.
+4. Sign up yourself at `/login` right away, **before** sharing the URL
+   with anyone else — the first person to sign up automatically becomes the
+   site admin (see "Roles" below), so signing up first is how you claim that
+   account. After that, invite everyone else from the Identity tab, or leave
+   public signups on if that's what your site needs.
+5. Optional setup lives on the environment variables page
+   (`https://app.netlify.com/projects/{sitename}/configuration/env`):
+   `ALLOWED_SIGNUP_DOMAIN` for signup restrictions, and notification keys for
+   Slack or email. New signups start as a `respondent` automatically — there's
+   no role to configure.
+
+## Go live checklist
+
+A small checklist floats in the corner of the app for **admins only**. It is a
+UX nudge, not access control: it links to dashboard pages and exposes no data.
+
+- **Visible only to admins.** Everyone else, and logged-out visitors, sees
+  nothing. With sign-in off, the stand-in demo user counts as an admin, so it
+  also shows in local dev.
+- **Hides itself** once every checkable step is done, and the dismiss button
+  stays dismissed across reloads (stored in `localStorage`). Clear site
+  storage to bring it back.
+- **On the official demo site** the "Make this app yours" badge shows instead.
+
+Steps:
+
+1. **Deploy** — checked once the app is running on a real Netlify deploy.
+2. **Sign in** — enable Identity in the Netlify dashboard (on a deployed site
+   the checklist links straight to it).
+3. **Admin** — sign up first, before sharing the URL; the first signup becomes
+   the admin. This step stays unchecked until real sign-in is on.
+4. **Domain** — decide who can sign up: set `ALLOWED_SIGNUP_DOMAIN` (exact
+   domain, enforced by the signup hook in `netlify/functions/identity.mts`),
+   and/or turn off open signups and invite people from the Identity tab. This
+   one is a reminder, not a checkbox — the app can't verify it.
+
+To rebrand, edit `src/config/app.ts` and swap `public/logo.svg`.
+
+To remove it, delete `src/components/setup-prompt.tsx`,
+`src/components/go-live-checklist.tsx` and
+`src/components/netlify-deploy-badge.tsx`, plus the `<SetupPrompt />` line in
+`src/components/app-shell.tsx`.
+
+## Base template guarantees
+
+What this template gives you out of the box, before you fork it for a
+vertical — full detail is in the linked section, this is just orientation.
+
+- **[Roles](#roles)**: role membership lives in Identity's `app_metadata`
+  (never `user_metadata` — that's user-editable via the Identity API, so a
+  role there is a privilege-escalation hole). `requireRole(allowedRoles)`
+  gates TanStack Start loaders/server functions; `checkRole(allowedRoles)`
+  gates raw Netlify Functions. Neither knows or cares what role strings are
+  valid — **the base template does not define a role taxonomy**; your
+  vertical decides what roles exist.
+- **[Soft delete](#soft-delete)**: on by default, not configurable. Deleting
+  a row marks it (`deletedAt`), it's never actually removed. Every entity
+  that opts in shares the same `softDeleteColumns`/`notDeleted`/
+  `isNotDeleted` primitives instead of reimplementing filtering per table.
+- **[Audit logging](#audit-logging)**: mutations are always logged
+  (`audit()`); reads can opt in per call site (`auditRead()`) for sensitive
+  getters. `/admin/audit` badges each row "Read" vs "Change".
+- **Uploads fail closed**: `/api/upload` and `/api/files/:key` 403
+  unconditionally until Identity is enabled and
+  `appConfig.uploadAllowedRoles` (defaults to `[]`) are explicitly set. See
+  "Uploads" below.
+- **Not provided (yet)** — don't assume these exist:
+  - **Respondent-facing survey taking** — today "Surveys" is an admin-only
+    create/list feature (`src/routes/_app/admin/surveys/`); there's no route
+    or data model yet for an employee to view an assigned survey and submit
+    answers.
+  - **Hard purge / scheduled retention** — soft delete (above) is on, but
+    nothing currently purges old soft-deleted rows. Add a scheduled Netlify
+    Function that calls a `purgeExpired<Entity>()` you write in
+    `src/data/<entity>.ts`, gated by your own env var, if you need one.
+  - **Audience/targeting** (who a resource is visible to, as distinct from
+    what a role permits) — deferred pending a second vertical to design
+    against.
+  - **Bulk/CSV export** from the data table.
+  - **PII/data-sensitivity tiering** (field-level encryption, reidentification
+    thresholds, etc.) — a vertical's own responsibility if it needs this; see
+    the note in "Soft delete" on how that interacts with `deletedAt`/purge.
+
+## Environment variables
+
+| Variable                                                 | Default | Purpose                                                                                                                                                      |
+| -------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `NETLIFY_DB_URL`                                         | —       | Set automatically by `@netlify/database` / `netlify database init`. Don't set by hand.                                                                       |
+| `AUTH_DEV_USER`                                          | —       | Local-dev-only fake session, e.g. `{"email":"you@example.com","roles":["admin"]}`. Turns auth on only when running under `netlify dev` (`NETLIFY_DEV=true`). |
+| `ALLOWED_SIGNUP_DOMAIN`                                  | —       | Optional — restricts signups to one exact email domain (no subdomains). Unset means no restriction. See "Roles" below.                                       |
+| `SLACK_WEBHOOK_URL`                                      | —       | Enables the `slack` notify channel.                                                                                                                          |
+| `RESEND_API_KEY`, `NOTIFY_EMAIL_FROM`, `NOTIFY_EMAIL_TO` | —       | Enables the `email` notify channel (via [Resend](https://resend.com)).                                                                                       |
+
+See `env.example` for a copy-pasteable starting point. It is not a dotfile, so
+Netlify Drop can fetch it; copy it to `.env` if you want a local env file.
+
+> **Note on sample data:** there is no env var for it. Local development
+> (including a linked `netlify dev`) and the official demo site use in-memory
+> sample data; every other deploy, previews and branch deploys included, uses
+> Netlify Database. The app never
+> infers this from whether `NETLIFY_DB_URL` happens to be set, because
+> `@netlify/database` may create that value during local development before
+> migrations have been applied.
+
+## Enable auth
+
+The app ships with auth **off**. To turn it on:
+
+1. In the Netlify dashboard, enable Identity for your site (Site
+   configuration → Identity → Enable Identity) — see
+   [Netlify's Identity setup guide](https://docs.netlify.com/manage/security/secure-access-to-sites/identity/get-started/#enable-identity).
+2. That's it for detection. The app asks Netlify whether Identity is on (the
+   project's Identity settings endpoint answers 404 when it's off) and picks
+   it up within about a minute, no redeploy needed. There is no auth env var
+   to set. If that check can't be completed (an outage, a password-protected
+   deploy), the app assumes Identity is on rather than leave itself open.
+3. Sign up yourself at `/login` before inviting anyone else — the very first
+   signup automatically becomes the admin instead of getting
+   `appConfig.defaultRole` (see "Roles" below). After that, invite users from
+   the Identity tab, or let them sign up directly if signups are enabled in
+   your Identity settings. Every new signup gets `respondent` in
+   `app_metadata.roles` automatically — that's a fixed app setting, not
+   something you configure here. Promote specific users beyond it from the
+   Identity tab (`roles` land in `app_metadata.roles`, never `user_metadata` —
+   see "Roles" below).
+
+With auth on:
+
+- `/login` handles login, signup, "forgot password," and any OAuth providers
+  you've enabled in Identity settings.
+- `/reset-password` is the shared "set a password" screen for both password
+  recovery and invite links — reached via redirect, not linked directly.
+  Recovery finishes with `updateUser({ password })`; invites finish with
+  `acceptInvite(token, password)`. See `src/auth/client.tsx`'s
+  `useAuthCallback`/`ResetPasswordForm` for how the two flows are told apart.
+- Every new signup gets `appConfig.defaultRole` (`respondent`) in
+  `app_metadata.roles` automatically, except the very first, which becomes the
+  admin (see "Roles" below) — no manual dashboard step required for the common
+  case.
+- Every route under `/admin` redirects anonymous visitors to `/login` — but
+  the **real** authorization boundary is `requireUser()` / `requireRole()`
+  inside each server function (`src/server/*.ts`), which runs regardless of
+  how the request got there.
+- Mutations get audit-logged (actor, action, before/after) — see
+  `/admin/audit`. Read-level logging exists too, but is opt-in per call
+  site — see "Audit logging" below.
+
+If Identity is unavailable but an auth flow is reached, `/login` shows a
+persistent alert instead of failing silently through a generic error on
+submit — `LoginForm` detects this via `getSettings()` throwing
+`MissingIdentityError` and tells the visitor exactly what's missing and where
+to fix it.
+
+**Local development:** `@netlify/identity` only works against a real Netlify
+deploy — there's no local Identity emulator. To develop with auth on locally,
+run `netlify dev` and set:
+
+```bash
+AUTH_DEV_USER='{"email":"you@example.com","roles":["admin"]}'
+```
+
+This fake session is only honored when `NETLIFY_DEV=true` (i.e. under
+`netlify dev`), never in a real deploy. Password reset and invite acceptance
+can't be exercised locally either way — Identity's own email links only
+work against a real deploy.
+
+## Roles
+
+The base template ships a generic role-checking _mechanism_, not a fixed
+role taxonomy — it has no opinion on what role strings your vertical uses
+(`admin`/`respondent`, `hr_admin`/`employee`, etc.), only on how roles are
+stored and checked.
+
+**Storage convention:** role membership always lives in Identity's
+`app_metadata.roles` (a string array), **never `user_metadata`**.
+`user_metadata` is user-editable via the Identity API — a role stored there
+would let any signed-in user grant themselves roles, which is a
+privilege-escalation hole. This is also the only role storage location that
+works with Netlify's own tooling with zero custom code: it's what the
+Identity dashboard's "Roles" field writes, and what `netlify.toml`'s
+`Role`-based redirect gating (see the commented-out example there) reads.
+
+**Assigning roles:**
+
+- **At signup**: `netlify/functions/identity.mts` is an Identity signup
+  event hook that assigns `appConfig.defaultRole` (a fixed app setting, not an
+  env var) to every new user's `app_metadata.roles` automatically.
+  Identity event hooks only fire against a real deploy with Identity
+  enabled — not under `netlify dev`.
+- **The first signup becomes the admin**: the same hook checks
+  `hasAnyUsers()` (`src/auth/first-user.ts`, backed by the Identity admin
+  API's `listUsers()`) and assigns `appConfig.adminRole` instead of
+  `appConfig.defaultRole` when nobody has signed up yet. This exists so a
+  non-technical person deploying the template can administer their own site
+  without ever opening the Identity dashboard. It has a race window (two
+  people signing up in the same instant could both become admin) and, on
+  open signups, a land-grab window (whoever signs up first — not necessarily
+  the deployer — claims it) — see "After deploying to your account" above
+  for closing the second one by signing up immediately. If the `listUsers()`
+  check itself fails, the hook falls back to `appConfig.defaultRole` rather than risk
+  granting admin on an unconfirmed read. `/login`'s signup form shows a
+  "you'll be the site admin" notice while this condition holds (see
+  `src/server/first-user.ts` / `src/auth/client.tsx`).
+- **Restricting who can sign up**: the same hook optionally enforces
+  `ALLOWED_SIGNUP_DOMAIN` — set it to one exact email domain (e.g.
+  `acme.com`) and any signup whose email domain doesn't match exactly (no
+  subdomains) is denied via `event.deny()` before a role is ever assigned.
+  This is optional rather than fail-loud: the hook has no way to know
+  whether Identity's "open signups" setting is even on, so it can't force
+  every deployment to configure it. Unset (the default)
+  means no restriction — correct for invite-only setups, where every
+  signup already comes from a trusted invite rather than open self-signup.
+- **Beyond the first admin and the default role**: promote specific users to
+  additional roles from the Identity tab in the Netlify dashboard (Users →
+  select a user → edit their Roles). There is no in-app role-management UI
+  by design — this is base-layer infrastructure, not a vertical feature.
+
+**Checking roles:**
+
+- `requireRole(allowedRoles: string[])`, from `src/auth/server.ts` — for
+  TanStack Start route loaders and server functions. Throws a 403 error
+  (rendered via the route's `errorComponent`) if the session's roles don't
+  intersect `allowedRoles`; no-op when Identity auth is off. Example:
+  `requireRole(['admin', 'editor'])`.
+- `checkRole(allowedRoles: string[])`, from `src/auth/session.ts` — for raw
+  Netlify Functions, which have no router to catch a thrown error. Returns
+  `null` on success, or a `Response` (401/403) to return immediately on
+  failure. Deliberately lives in a separate, dependency-light module from
+  `requireRole` so a function importing it doesn't pull in the TanStack
+  Router/DB dependencies `src/auth/server.ts` needs for other exports. See
+  `netlify/functions/example-protected.mts` for a complete reference
+  implementation — copy it, change the path and `allowedRoles`, done.
+
+Both helpers have zero knowledge of what role strings are valid — only the
+`allowedRoles` array you pass in varies per call site. This is pure
+boilerplate that shouldn't need to change per vertical.
+
+**The one hardcoded role name in the base template** is
+`appConfig.adminRole` (`src/config/app.ts`, defaults to `'admin'`), which
+gates the built-in demo admin section (survey authoring, responses, results,
+audit log, usage events) and its links in the account menu —
+`src/components/user-menu.tsx` shows those links when `!authEnabled` (nothing
+to restrict yet) or when the signed-in user has this role; the actual
+`requireRole`/`checkRole` calls inside each server function are what really
+enforce it. Rename it, or remove the admin section entirely, when forking
+for a vertical with its own taxonomy.
+
+`appConfig.uploadAllowedRoles` (`src/config/app.ts`, defaults to `[]`) is a
+second, separate role list gating `/api/upload` and `/api/files/:key` (see
+"Uploads" below) — it deliberately does **not** default to
+`[appConfig.adminRole]`, so every vertical picks its own attachment roles
+explicitly, e.g. `['admin', 'recruiter']`.
+
+**This vertical's taxonomy** is exactly two roles, `admin` and `respondent`
+— no third tier. This fork goes one step further than the base template and
+also hardcodes the signup default: `appConfig.defaultRole = 'respondent'`
+(not a `DEFAULT_ROLE` env var, unlike the base template's generic version)
+means every new sign-in (including via the domain-restricted Google sign-in
+this app uses) starts as a `respondent`, except the very first signup, who becomes `admin` (see below). A
+fixed two-role taxonomy has no deployment-time decision to make here, so
+there's no reason to leave it as configurable, throw-if-unset state — see
+`src/config/app.ts` for both. To provision the first admin (or promote
+anyone later), use the Identity dashboard's Roles field as described above
+— there's no self-service or scripted role promotion here by design,
+matching the base template's "dashboard-only" approach. `src/config/app.ts`'s
+`roleLabels` maps these generic role strings to the display copy used in
+the UI (`admin` → "HR Admin", `respondent` → "Employee") — authorization
+always checks the raw `admin`/`respondent`
+strings, never the label.
+
+## Audit logging
+
+Like Roles, this is a _mechanism_, not a policy — the base template has no
+opinion on which reads or writes are sensitive enough to log; that judgment
+belongs to whatever vertical is built on top.
+
+**Mutations are always logged, not configurable:** `audit(action, entity,
+entityId, before?, after?)`, from `src/auth/server.ts`, writes an entry
+(actor, action, before/after) for every create/update/delete. It's already
+called from `src/server/surveys.ts`'s `createSurveyServer`
+(`survey.created`) — copy that call pattern for any new entity's mutations.
+No-ops when Identity auth is off.
+
+**Reads are opt-in, per call site:** `auditRead(action, entity, entityId)`,
+also from `src/auth/server.ts`, is the read counterpart — same persistence
+path and actor resolution as `audit()`, just no before/after (a read has no
+diff). **Nothing calls this automatically.** `surveys`' `getSurvey`/
+`listSurveys` do not call it (survey metadata isn't sensitive), but
+`src/server/survey-responses.ts`'s `getResponseServer` (and the
+`/admin/responses/$id` route) does — viewing one respondent's attributed
+answers is exactly the "who viewed this" case it exists for. Call
+`auditRead()` the same way from any other getter that needs a view trail
+(e.g. EEO fields), using an action string ending in `.viewed` (mirroring
+`audit()`'s `.created`/`.updated`/`.deleted` convention — see `/admin/audit`'s
+Read/Change badge, which keys off that suffix). See
+`src/server/example-audited-getter.ts` for a complete reference
+implementation — copy it, point it at your real sensitive getter, done.
+
+## Soft delete
+
+**Soft delete** — marking a row deleted and excluding it from default
+queries, while keeping it recoverable in the database. **Always on, not
+configurable.** There's no vertical for which "deletions are silently
+unrecoverable" is the right default.
+
+From `src/db/soft-delete.ts`:
+
+- `softDeleteColumns` — spread into a `pgTable(...)` definition (see
+  `surveys` in `src/db/schema.ts`) rather than repeating a `deletedAt`
+  column by hand.
+- `notDeleted(column)` / `isNotDeleted(row)` — the shared query filter
+  (DB mode) and predicate (demo mode) every entity's `list`/`get` functions
+  use instead of an ad hoc `WHERE`/`.filter()` per call site.
+- A `deleteXServer` function should set `deletedAt`, never issue a real
+  `DELETE`, and log a `<entity>.deleted` audit entry (see `/admin/audit`) —
+  recoverable via `deletedAt` at the DB layer only (no restore UI ships in
+  the base template). `surveys` has the soft-delete columns wired into its
+  schema and reads, but no delete flow yet — see "Not provided (yet)" above.
+
+**Hard purge** (permanently destroying a soft-deleted row after a retention
+window) isn't wired up in this fork. If you need it: write a
+`purgeExpired<Entity>(retentionDays)` in `src/data/<entity>.ts` that
+hard-deletes rows where `deletedAt` is older than the cutoff, call it from a
+scheduled Netlify Function (`export const config: Config = { schedule: '...' }`),
+and gate both the function and the retention window behind your own env
+vars — there's no safe default retention period to ship, so require it
+explicitly rather than guessing a number.
+
+**This base template has no concept of data-sensitivity tiers or
+reidentification thresholds**, and soft delete doesn't invent one. If your
+vertical layers field-level encryption, minimum-group-size reveal
+thresholds, or similar sensitivity handling on top (e.g. a survey results
+dashboard), you're responsible for defining how that logic interacts with
+`deletedAt` — the base template doesn't assume anything about it.
+
+## Database
+
+Automatic. Every deploy except the official demo uses Netlify Database;
+Netlify provisions it and applies every migration in
+`netlify/database/migrations/` before the deploy goes live. There is nothing to
+switch on. Locally you stay on sample data.
+
+Optionally seed a deployed database with the same sample data (safe to
+re-run, via `onConflictDoNothing`):
+
+```bash
+npm run db:seed
+```
+
+This inserts `src/data/demo/seed.ts` via Drizzle (`onConflictDoNothing`, safe
+to re-run).
+
+To change the schema: edit `src/db/schema.ts`, run `npm run db:generate` to
+emit a migration, commit the migration, and deploy.
+
+## Notifications
+
+`src/lib/notify.ts` exports one function: `notify({ channel, subject, body, to? })`.
+It POSTs to `/api/notify`, a **background** Netlify Function
+(`netlify/functions/notify.mts`) that does the actual send — so the caller
+doesn't block on a third-party API.
+
+- **Slack**: set `SLACK_WEBHOOK_URL` (an incoming webhook URL).
+- **Email**: set `RESEND_API_KEY`, `NOTIFY_EMAIL_FROM`, and optionally
+  `NOTIFY_EMAIL_TO` (or pass `to` per-call).
+
+Missing config logs a warning and returns — it never throws. To add a
+channel: create `src/lib/notify-channels/<channel>.ts` exporting a
+`notify<Channel>({ subject, body, to? })` function, then add one line to the
+map in `netlify/functions/notify.mts`.
+
+## Uploads
+
+`src/components/upload/file-upload.tsx` is a drag/drop uploader wired to
+`/api/upload` (`netlify/functions/upload.mts`), which stores files in a
+Netlify Blobs store named `uploads` (4 MB cap — the Netlify Functions request
+body limit). `/api/files/:key` (`netlify/functions/files.mts`) streams a
+file back out.
+
+**Both endpoints fail closed, unconditionally** — they touch real Netlify
+Blobs storage, so unlike the rest of the app they never treat "auth off" as
+"open to everyone." Both apply the same three guards, in order, before doing
+anything else:
+
+1. Netlify Identity must be enabled for the project — if it isn't, every
+   request gets `403`, even in demo mode.
+2. `appConfig.uploadAllowedRoles` (`src/config/app.ts`) must be a non-empty
+   array — it defaults to `[]`, so every request gets `403` until you set it
+   to your vertical's own attachment roles, e.g. `['admin', 'recruiter']`.
+   It deliberately does not default to `[appConfig.adminRole]`.
+3. `checkRole(appConfig.uploadAllowedRoles)` — the requesting user's session
+   must have one of those roles, or they get `401`/`403`.
+
+The uploader's client code shows a specific "uploads are disabled" message
+when step 1 or 2 is the reason for a `403`, distinct from a plain
+authorization failure at step 3.
+
+It isn't attached to any entity by default. To attach an upload to an entity,
+store the returned `{ key, url }` on that entity's row (add a column in
+`src/db/schema.ts`, thread it through `src/data/<entity>.ts`, and render it
+in that entity's route).
+
+## Extension points
+
+- **Add an entity**: `src/db/schema.ts` (table + `$inferSelect`/`$inferInsert`
+  types) → `src/data/<entity>.ts` (demo/DB branches, same pattern as
+  `surveys.ts`) → `src/server/<entity>.ts` (`createServerFn` wrappers with
+  Zod validation) → `src/routes/_app/<entity>/` (list/detail/new routes). If
+  the entity needs retention, spread `softDeleteColumns` into its table and
+  use `notDeleted`/`isNotDeleted` in its `list`/`get` functions — see "Soft
+  delete" above.
+- **Branding**: edit `src/config/app.ts` only — product name, tagline, logo
+  path, and brand colors. `src/components/brand-theme.tsx` and
+  `src/components/app-shell.tsx` read from it; nothing else should hardcode
+  a product name or color.
+- **Roles**: see the dedicated "Roles" section above — `requireRole(allowedRoles)`
+  / `checkRole(allowedRoles)` are pure boilerplate; only the role strings you
+  pass in are vertical-specific.
+- **Data table**: `src/components/data-table/` — pass new columns to
+  `<DataTable columns data />`; sorting, filtering, search, and pagination
+  are already wired via `features.ts`'s shared `dataTableFeatures`.
+- **Forms**: `src/components/forms/use-app-form.ts` — add a new field type
+  under `fields/` and register it in `fieldComponents`.
+
+**Do not touch:**
+
+- `src/config/flags.ts` — flag logic is intentionally centralized; don't
+  read Netlify site/auth environment variables anywhere else.
+- `src/routeTree.gen.ts` — auto-generated by the TanStack Router Vite plugin.
+  Never edit by hand.
+- `netlify/database/migrations/` — never edit an already-applied migration
+  (Netlify detects and rejects the drift). Write a new one instead.
+
+## Testing, linting, formatting
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+npm run format
+```
+
+Tests run with `SITE_ID` unset, which keeps the data layer on in-memory
+sample data. They cover the demo data layer, flag parsing, the submission state
+machine, and notify's input validation.
+
+## Project layout
+
+See `AGENTS.md` for a short orientation aimed at coding agents forking this
+repo, and the folder-by-folder breakdown in the original implementation plan
+for the full picture. The short version:
+
+```
+src/config/app.ts        # branding — the only file you edit to rebrand
+src/config/flags.ts       # Sample-data / Identity detection — server-only
+src/db/schema.ts          # Drizzle schema (source of truth for the DB shape)
+src/db/soft-delete.ts      # deletedAt column mixin + shared query filter helpers
+src/data/                 # one file per entity, demo/DB branches inside
+src/server/                # createServerFn wrappers (Zod validation, auth, audit)
+                              # example-audited-getter (opt-in read-audit reference)
+src/auth/                  # session resolution, route guards, login UI
+src/routes/                 # file-based routes (TanStack Router)
+src/components/              # shadcn ui/, data-table/, forms/, states/
+netlify/functions/            # notify, upload, files, events (background/HTTP)
+                              # identity (signup role hook), example-protected (role-gate reference)
+```
