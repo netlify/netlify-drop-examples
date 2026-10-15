@@ -144,6 +144,16 @@ describe('LoginForm', () => {
     expect(screen.queryByText('or continue with')).toBeNull()
   })
 
+  it('shows the Google icon on the Google button, and none on other providers', async () => {
+    setSettings({ providers: { ...baseSettings.providers, google: true, github: true } })
+    render(<LoginForm />)
+
+    const google = await screen.findByRole('button', { name: 'Google' })
+    expect(google.querySelector('img')?.getAttribute('src')).toBe('/google.svg')
+    expect(google.querySelector('img')?.getAttribute('width')).toBe('16')
+    expect(screen.getByRole('button', { name: 'GitHub' }).querySelector('img')).toBeNull()
+  })
+
   it('supports email without Google: just the form', async () => {
     render(<LoginForm />)
 
