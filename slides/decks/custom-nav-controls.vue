@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { useNav } from '@slidev/client/composables/useNav.ts'
 import IconButton from '@slidev/client/internals/IconButton.vue'
-import { canEdit, cancelEditing, editing, identityEnabled, loginOpen, logOut, resetSlide, saveEditing, saving, startEditing, userEmail } from './edits'
+import { canEdit, cancelEditing, editing, identityEnabled, logOut, openLogin, resetSlide, saveEditing, saving, startEditing, userEmail } from './edits'
 
 const { currentSlideNo } = useNav()
 
 function onEdit() {
   if (!canEdit.value)
-    loginOpen.value = true
+    openLogin()
   else if (editing.value)
     cancelEditing()
   else

@@ -1,5 +1,6 @@
+import type { AuthProvider, Settings } from '@netlify/identity'
 import type { EditMap } from '../edits-core'
-import { getSettings, getUser, handleAuthCallback, login, logout } from '@netlify/identity'
+import { acceptInvite, getSettings, getUser, handleAuthCallback, login, logout, oauthLogin, requestPasswordRecovery, signup, updateUser } from '@netlify/identity'
 import { lockShortcuts } from '@slidev/client/state/index.ts'
 import { ref } from 'vue'
 import { makeKey } from '../edits-core'
@@ -22,6 +23,25 @@ export const editing = ref(false)
 export const saving = ref(false)
 export const editError = ref('')
 export const loginOpen = ref(false)
+
+/** Screens of the login dialog. `invite` and `recovery` set a password after an email link. */
+export type LoginMode = 'login' | 'signup' | 'forgot' | 'reset-sent' | 'check-email' | 'invite' | 'recovery'
+export const loginMode = ref<LoginMode>('login')
+/** A message carried into the dialog, such as a sign-in link that didn't work. */
+export const loginNotice = ref('')
+/** Identity's Registration and provider settings, which the dialog follows. */
+export const identitySettings = ref<Settings | null>(null)
+let inviteToken = ''
+
+// Identity's email links and OAuth logins return to the site root, which is the static
+// home page. It forwards the auth hash to the deck saved here (scripts/build-index.mjs).
+const RETURN_KEY = 'slides-auth-return'
+function rememberDeck() {
+  try {
+    localStorage.setItem(RETURN_KEY, import.meta.env.BASE_URL)
+  }
+  catch {}
+}
 
 interface Tracked { original: string, key: string }
 const tracked = new WeakMap<Text, Tracked>()
@@ -118,18 +138,110 @@ export async function initEdits(options: { identity?: boolean } = {}) {
     return
 
   try {
-    await getSettings() // throws MissingIdentityError when Identity is off
+    identitySettings.value = await getSettings() // throws MissingIdentityError when Identity is off
     identityEnabled.value = true
-    await handleAuthCallback() // finishes invite / recovery / confirmation links
-    await refreshUser()
   }
   catch {
     identityEnabled.value = false
+    return
   }
+  await finishAuthLink()
+  await refreshUser()
+}
+
+export function openLogin(mode: LoginMode = 'login', notice = '') {
+  loginMode.value = mode
+  loginNotice.value = notice
+  loginOpen.value = true
+}
+
+function clearHash() {
+  history.replaceState(history.state, '', location.pathname + location.search)
+}
+
+/** Finishes an invite, password reset, confirmation or OAuth link that landed on this deck. */
+async function finishAuthLink() {
+  // A provider that refuses the login comes back with only an error in the hash.
+  const refused = new URLSearchParams(location.hash.slice(1)).get('error_description')
+  if (refused) {
+    clearHash()
+    openLogin('login', `We couldn't sign you in: ${refused}`)
+    return
+  }
+  try {
+    const result = await handleAuthCallback()
+    if (result?.type === 'invite') {
+      inviteToken = result.token ?? ''
+      openLogin('invite')
+    }
+    else if (result?.type === 'recovery') {
+      // The link signed the person in, but the password hasn't changed yet.
+      openLogin('recovery')
+    }
+  }
+  catch {
+    // A token was there but didn't work: usually an expired or already-used link.
+    clearHash()
+    openLogin('login', "That link didn't work. It may have expired. Log in, or ask for a new one.")
+  }
+}
+
+/** Plain-language messages for the Identity failures people hit. Identity's wording isn't a
+ *  stable contract, so this matches loosely and falls back to the original message. */
+export function friendlyAuthError(error: unknown, mode: LoginMode): string {
+  const message = error instanceof Error ? error.message : ''
+  if (!message)
+    return 'Something went wrong. Try again.'
+  if (/not confirmed|confirm your email|unconfirmed/i.test(message))
+    return 'Confirm your email first. Use the link we sent when you signed up.'
+  if (/signups? (are |is )?(not allowed|disabled)|signup.*disabled/i.test(message))
+    return 'Sign-up is by invitation only. Ask for an invite.'
+  if (mode === 'signup' && /already (been )?registered|already exists|already in use/i.test(message))
+    return 'An account with that email already exists. Log in instead.'
+  if (mode === 'login' && /invalid (login )?credentials|invalid.*(email|password)|password invalid|no user found|incorrect/i.test(message))
+    return 'Email or password is incorrect.'
+  return message
 }
 
 export async function logIn(email: string, password: string) {
   await login(email, password)
+  await refreshUser()
+  loginOpen.value = false
+}
+
+/** Signs up. With email confirmation on, Identity sends a link and there is no session yet. */
+export async function signUp(email: string, password: string) {
+  rememberDeck()
+  const user = await signup(email, password)
+  if (!user.confirmedAt) {
+    loginMode.value = 'check-email'
+    return
+  }
+  await refreshUser()
+  loginOpen.value = false
+}
+
+export async function sendPasswordReset(email: string) {
+  rememberDeck()
+  await requestPasswordRecovery(email)
+  loginMode.value = 'reset-sent'
+}
+
+export function logInWith(provider: AuthProvider) {
+  rememberDeck()
+  try {
+    oauthLogin(provider) // navigates away, then throws to stop the caller
+  }
+  catch {}
+}
+
+/** Sets the password after an invite or password reset link. */
+export async function setPassword(password: string) {
+  if (loginMode.value === 'invite')
+    await acceptInvite(inviteToken, password)
+  else
+    await updateUser({ password })
+  inviteToken = ''
   await refreshUser()
   loginOpen.value = false
 }

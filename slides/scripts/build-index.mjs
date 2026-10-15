@@ -36,13 +36,28 @@ const blurb = `
       <a class="blurb-link" href="${TEMPLATE_URL}" target="_blank" rel="noreferrer">See everything you can configure${icon('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>')}</a>
     </section>`
 
+// Identity's email links (invite, confirmation, password reset) and OAuth logins return
+// to the site root, which is this static page. Forward the auth hash to a deck, which
+// finishes the sign-in (decks/edits.ts): the deck the person started from, saved in
+// localStorage before they left, or the first deck.
+const authForward = !decks.length ? '' : `
+  <script>
+    (function () {
+      if (!/(^|[#&])(access_token|confirmation_token|recovery_token|invite_token|email_change_token|error_description)=/.test(location.hash)) return
+      var decks = ${JSON.stringify(decks.map(deck => `/${deck.slug}/`))}
+      var target = decks[0]
+      try { if (decks.indexOf(localStorage.getItem('slides-auth-return')) > -1) target = localStorage.getItem('slides-auth-return') } catch (e) {}
+      location.replace(target + location.hash)
+    })()
+  </script>`
+
 // Thumbnails are live, scaled-down copies of each deck's first slide, so they never
 // go stale and the build needs no browser. They are hidden (and so never loaded) in
 // the list view.
 const html = `<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8">${authForward}
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Slides</title>
   <style>

@@ -16,6 +16,7 @@
     "decks/notes.ts",
     "decks/public/bg/content.svg",
     "decks/public/bg/cover.svg",
+    "decks/public/google.svg",
     "decks/public/screens/echo-notes.svg",
     "decks/public/screens/quickstart-steps.svg",
     "decks/quickstart.md",

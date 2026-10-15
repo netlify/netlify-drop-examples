@@ -33,6 +33,10 @@ This repo is a Slidev deck template. It is not an app.
   unlike edits they are readable only by signed-in people. Any signed-in user can
   edit (there are no roles; Identity's Registration setting, invite only, decides who
   can sign in), and both switch on by themselves when Identity is enabled.
+  The login dialog follows Identity's settings (sign-up, email confirmation,
+  external providers, password reset). Identity's email links and provider logins
+  land on the home page, which forwards the hash to a deck (`authForward` in
+  `scripts/build-index.mjs`); `finishAuthLink()` in `decks/edits.ts` completes them.
   The optional `ALLOWED_EMAIL_DOMAINS` env var (comma-separated, see
   `netlify/lib/domains.mts`) narrows sign-in to some email domains, in the hooks and again on
   every edits and notes request.
