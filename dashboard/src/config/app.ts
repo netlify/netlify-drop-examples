@@ -12,9 +12,9 @@ export const appConfig = {
   // only). Describe what the pack does for the team, lowercase, no full stop.
   packDescription:
     'a read-only pipeline and ARR dashboard your team loads from CSV, Snowflake or Salesforce, with sign-in, role-based permissions and an audit log',
-  // This pack's page on netlify.com/templates. The About page links to it.
-  // To confirm: the live slug.
-  templatePageUrl: 'https://www.netlify.com/templates/pipeline-arr-dashboard',
+  // This pack's page on netlify.com/templates. The About page links to it and
+  // every Finish setting up row's "Learn more" points at one of its anchors.
+  templatePageUrl: 'https://www.netlify.com/templates/dashboard/',
   logo: {
     // Path relative to /public. Swap the file and keep the same path, or
     // change the path here.
