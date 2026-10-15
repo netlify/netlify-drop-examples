@@ -13,7 +13,7 @@ import { checkRole } from '../../src/auth/session'
  * route/server function instead of a raw Netlify Function.
  */
 export default async (_req: Request) => {
-  if (isAuthEnabled()) {
+  if (await isAuthEnabled()) {
     const denied = await checkRole(['admin']) // <- swap for your vertical's role(s)
     if (denied) return denied
   }

@@ -60,7 +60,33 @@ export function isDemoMode(): boolean {
   return !isDeployed() || isOfficialDemoSite()
 }
 
-export function isAuthEnabled(): boolean {
+// How long to remember whether Identity is on. Enabling it in the dashboard
+// takes effect within a minute, without a redeploy. Keyed by Identity URL so a
+// cached answer can never leak across sites. Only definitive answers are
+// cached, never errors.
+const IDENTITY_CHECK_TTL_MS = 60_000
+const identityChecks = new Map<string, { enabled: boolean; expires: number }>()
+
+/** Test hook: forget remembered Identity lookups. */
+export function clearAuthEnabledCache(): void {
+  identityChecks.clear()
+}
+
+/**
+ * Whether Netlify Identity is turned on for this project, asked of the
+ * platform itself rather than an env var.
+ *
+ * `getIdentityConfig()` alone can't tell: on the server it returns the site's
+ * Identity URL whenever the code runs on Netlify, enabled or not. So we ask
+ * the Identity settings endpoint. Netlify answers 200 with JSON when Identity
+ * is on and 404 when it's off.
+ *
+ * Fails closed: if the endpoint can't be reached or answers anything else
+ * (5xx, a password-protected deploy's 401, a network error), this returns
+ * `true`, because `requireRole()` and friends no-op when auth is off and a
+ * transient error must never open the app up. Failures aren't cached.
+ */
+export async function isAuthEnabled(): Promise<boolean> {
   if (process.env.NETLIFY_DEV === 'true' && process.env.AUTH_DEV_USER) {
     return true
   }
@@ -69,7 +95,31 @@ export function isAuthEnabled(): boolean {
     return false
   }
 
-  return getIdentityConfig() != null
+  const url = getIdentityConfig()?.url
+  if (!url) {
+    return false
+  }
+
+  const cached = identityChecks.get(url)
+  if (cached && cached.expires > Date.now()) {
+    return cached.enabled
+  }
+
+  try {
+    const response = await fetch(`${url}/settings`, { headers: { accept: 'application/json' } })
+    if (response.status === 404) {
+      identityChecks.set(url, { enabled: false, expires: Date.now() + IDENTITY_CHECK_TTL_MS })
+      return false
+    }
+    if (response.ok) {
+      identityChecks.set(url, { enabled: true, expires: Date.now() + IDENTITY_CHECK_TTL_MS })
+      return true
+    }
+    console.warn(`Identity settings check returned ${response.status}; treating Identity as enabled.`)
+  } catch (error) {
+    console.warn('Identity settings check failed; treating Identity as enabled.', error)
+  }
+  return true
 }
 
 /**
@@ -222,4 +272,23 @@ export function isSalesforceEnabled(): boolean {
 export function getIdentityUsersUrl(): string | null {
   const name = process.env.SITE_NAME
   return name ? `https://app.netlify.com/projects/${encodeURIComponent(name)}/identity` : null
+}
+
+/**
+ * Connection details for Netlify Database, read from the env vars Netlify
+ * sets on every deploy. `NETLIFY_DB_URL` is provisioned by the platform
+ * (`@netlify/database`), never by hand. `NETLIFY_DB_DRIVER=server` means a
+ * plain TCP Postgres connection (local `netlify dev`); anything else uses the
+ * serverless HTTP driver. Only called from `src/db/client.ts`, and only when a
+ * real database is expected, so demo mode never trips the throw below.
+ */
+export function getDatabaseConnection(): { url: string; useServerDriver: boolean } {
+  const url = process.env.NETLIFY_DB_URL
+  if (!url) {
+    throw new Error(
+      'NETLIFY_DB_URL is not set. Netlify provisions it when @netlify/database is installed; ' +
+        'run `netlify database init` or redeploy. See README > Database.',
+    )
+  }
+  return { url, useServerDriver: process.env.NETLIFY_DB_DRIVER === 'server' }
 }

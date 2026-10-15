@@ -18,7 +18,7 @@ const trackEventInput = z.object({
  */
 export async function trackEventServer(input: unknown) {
   const data = trackEventInput.parse(input)
-  const user = isAuthEnabled() ? await getSessionUser() : null
+  const user = (await isAuthEnabled()) ? await getSessionUser() : null
   return insertEvent({
     name: data.name,
     path: data.path ?? null,

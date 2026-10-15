@@ -29,7 +29,7 @@ export type SessionUser = User
  * function that imports it, even if it never calls `requireUser`/`audit`.
  */
 export async function getSessionUser(): Promise<SessionUser | null> {
-  if (!isAuthEnabled()) {
+  if (!(await isAuthEnabled())) {
     return null
   }
 

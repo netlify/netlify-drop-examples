@@ -15,7 +15,7 @@ import { DatasetValidationError } from '../../src/datasets/contract'
  * Identity -> 403. The nightly run is salesforce-scheduled-refresh.mts.
  */
 export default async (_req: Request) => {
-  if (!isAuthEnabled()) return Response.json({ error: 'not_configured' }, { status: 403 })
+  if (!(await isAuthEnabled())) return Response.json({ error: 'not_configured' }, { status: 403 })
   const denied = await checkRole(appConfig.dataEditorRoles)
   if (denied) return denied
 

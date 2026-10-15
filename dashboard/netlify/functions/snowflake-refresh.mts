@@ -18,7 +18,7 @@ import { isSavedQueryId, savedQueries } from '../../src/config/saved-queries'
  * Fail-closed like the upload endpoints: no Identity -> 403.
  */
 export default async (req: Request) => {
-  if (!isAuthEnabled()) return Response.json({ error: 'not_configured' }, { status: 403 })
+  if (!(await isAuthEnabled())) return Response.json({ error: 'not_configured' }, { status: 403 })
   const denied = await checkRole(appConfig.dataEditorRoles)
   if (denied) return denied
 

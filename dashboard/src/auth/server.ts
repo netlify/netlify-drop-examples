@@ -14,7 +14,7 @@ export type { SessionUser }
  * loaders can call this unconditionally without an `if (authEnabled)` guard.
  */
 export async function requireUser(): Promise<SessionUser | null> {
-  if (!isAuthEnabled()) return null
+  if (!(await isAuthEnabled())) return null
 
   const user = await getSessionUser()
   if (!user) {
@@ -42,7 +42,7 @@ export async function requireUser(): Promise<SessionUser | null> {
  * this base template (see README > Roles).
  */
 export async function requireRole(allowedRoles: string[]): Promise<SessionUser | null> {
-  if (!isAuthEnabled()) return null
+  if (!(await isAuthEnabled())) return null
 
   const user = await requireUser()
   const roles = user?.roles ?? []
@@ -64,7 +64,7 @@ export async function audit(
   before?: unknown,
   after?: unknown,
 ): Promise<void> {
-  if (!isAuthEnabled()) return
+  if (!(await isAuthEnabled())) return
 
   const user = await getSessionUser()
   await insertAudit({
@@ -93,7 +93,7 @@ export async function audit(
  * See `src/server/example-audited-getter.ts` for a reference wiring.
  */
 export async function auditRead(action: string, entity: string, entityId: string): Promise<void> {
-  if (!isAuthEnabled()) return
+  if (!(await isAuthEnabled())) return
 
   const user = await getSessionUser()
   await insertAudit({

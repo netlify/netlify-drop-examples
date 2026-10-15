@@ -102,9 +102,10 @@ fail.
    uses the database automatically; you do not need to set `NETLIFY_DB_URL`
    by hand. If you connect the database after the first deploy, redeploy the
    site so migrations run before you add records.
-3. Enable Identity in the Netlify dashboard, then redeploy. This is
-   required, not optional: the data is Tier 2, so nothing is served without
-   it. After that, visitors are sent to `/login` until they sign in.
+3. Enable Identity in the Netlify dashboard. The app notices within about a
+   minute, with no redeploy. This is required, not optional: the data is
+   Tier 2, so nothing is served without it. After that, visitors are sent to
+   `/login` until they sign in.
 4. Sign up yourself at `/login` right away, **before** sharing the URL
    with anyone else — the first person to sign up automatically becomes the
    site admin and everyone after gets `viewer` (see "Roles" below), so
@@ -220,8 +221,12 @@ The app ships with auth **off**. To turn it on:
 1. In the Netlify dashboard, enable Identity for your site (Site
    configuration → Identity → Enable Identity) — see
    [Netlify's Identity setup guide](https://docs.netlify.com/manage/security/secure-access-to-sites/identity/get-started/#enable-identity).
-2. Redeploy the site. The app detects the project's Identity configuration
-   automatically; there is no auth env var to set.
+2. The app asks the platform whether Identity is on (`isAuthEnabled()` in
+   `src/config/flags.ts`, which checks the Identity settings endpoint) and
+   picks it up within about a minute, no redeploy needed. There is no auth
+   env var to set. If that check can't be completed (an outage, a
+   password-protected deploy), the app assumes Identity is on rather than
+   leave itself open.
 3. Sign up yourself at `/login` before inviting anyone else — the very first
    signup automatically becomes the admin instead of getting `viewer` (see
    "Roles" below). After that, invite users from the Identity tab, or let

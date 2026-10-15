@@ -12,8 +12,8 @@ apps. Read this before making changes.
   (optional — restricts signups to one exact email domain, no subdomains)
   and `PURGE_ENABLED`/`RECORD_RETENTION_DAYS` (hard purge of soft-deleted
   dataset batches — off by default, `RECORD_RETENTION_DAYS` required once
-  `PURGE_ENABLED=true`). Auth is detected from Netlify Identity being enabled
-  for the linked project; local auth uses `AUTH_DEV_USER` under `netlify dev`.
+  `PURGE_ENABLED=true`). Auth is detected by asking the platform whether Identity is on
+  (async `isAuthEnabled()`; fails closed if the check errors); local auth uses `AUTH_DEV_USER` under `netlify dev`.
   All env-backed helpers live in `src/config/flags.ts` — read `process.env`
   only inside those functions, never at module scope, never anywhere else.
 - **Branding lives in one file**: `src/config/app.ts`. If you're asked to

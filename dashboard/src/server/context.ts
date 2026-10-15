@@ -46,7 +46,7 @@ export type AppContext = {
  * context, which client components read via `useAppContext()`.
  */
 export const getAppContext = createServerFn({ method: 'GET' }).handler(async (): Promise<AppContext> => {
-  const authEnabled = isAuthEnabled()
+  const authEnabled = await isAuthEnabled()
   const demoMode = isDemoMode()
   const sessionUser = authEnabled ? await getSessionUser() : null
   const user: AppContextUser | null = sessionUser
