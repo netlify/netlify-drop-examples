@@ -2,7 +2,7 @@ import { Pool, neon } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/netlify-db'
 import { getDatabaseConnection } from '@/config/flags'
 
-// This app uses Drizzle's plain query builder (`db.select().from(records)`,
+// This app uses Drizzle's plain query builder (`db.select().from(jobs)`,
 // etc.), so table objects are imported directly from `./schema` wherever
 // needed instead of being registered here.
 // `drizzle` is overloaded many times over; `ReturnType<typeof drizzle>`

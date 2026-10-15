@@ -1,56 +1,283 @@
 import { randomUUID } from 'node:crypto'
-import { and, desc, eq } from 'drizzle-orm'
+import { and, desc, eq, inArray } from 'drizzle-orm'
 import { isDemoMode } from '@/config/flags'
 import { getDb } from '@/db/client'
-import { jobs, applications, applicationNotes, type Job, type Application, type ApplicationNote, type NewJob, type NewApplication } from '@/db/schema'
+import {
+  jobs,
+  applications,
+  applicationNotes,
+  type Job,
+  type Application,
+  type ApplicationNote,
+  type NewJob,
+  type NewApplication,
+} from '@/db/schema'
 import { notDeleted, isNotDeleted } from '@/db/soft-delete'
+import { seedApplications, seedJobs, seedNotes } from '@/data/demo/recruiting'
 
-const now = new Date()
-const daysAgo = (days: number) => new Date(now.getTime() - days * 86400000).toISOString().slice(0, 10)
-let demoJobs: Job[] = [
-  ['21111111-1111-4111-8111-111111111101','Senior Product Designer','Design','New York, NY · Hybrid','Full-time','Shape thoughtful product experiences used by growing teams around the world.','Lead discovery and design from early concepts through delivery.\nPartner closely with product and engineering.\nEvolve our design system.','6+ years of product design experience.\nA portfolio showing systems thinking and excellent craft.\nClear, empathetic communication.','Flexible hybrid schedule.\nAnnual learning budget.\nMedical, dental, and vision coverage.','open',daysAgo(4)],
-  ['21111111-1111-4111-8111-111111111102','People Operations Partner','People','Remote — US','Full-time','Build the programs and day-to-day practices that help our people do their best work.','Advise managers across the employee lifecycle.\nOwn people programs and policy improvements.\nTurn feedback into practical action.','5+ years in people operations or HR business partnering.\nStrong judgment and discretion.\nComfort with data and change.','Remote-first stipend.\nGenerous paid time off.\nCompany-wide recharge days.','open',daysAgo(8)],
-  ['21111111-1111-4111-8111-111111111103','Backend Engineer, Platform','Engineering','Toronto, ON · Hybrid','Full-time','Build reliable foundations that let product teams ship confidently and quickly.','Design scalable platform services.\nImprove observability and developer tooling.\nMentor engineers through reviews and pairing.','Production experience with TypeScript or Go.\nStrong database fundamentals.\nA pragmatic approach to reliability.','Home office budget.\nStock options.\nFour weeks paid vacation.','open',daysAgo(12)],
-  ['21111111-1111-4111-8111-111111111104','Customer Education Lead','Customer Experience','London, UK · Hybrid','Full-time','Create learning experiences that make every customer feel capable from day one.','Set the education roadmap.\nProduce courses, workshops, and guides.\nMeasure learning outcomes.','Experience building customer education programs.\nExcellent facilitation and writing skills.','Private healthcare.\nLearning allowance.\nFlexible working hours.','closed',daysAgo(28)],
-  ['21111111-1111-4111-8111-111111111105','Lifecycle Marketing Manager','Marketing','Remote — Americas','Full-time','Own the customer journeys that turn a first interaction into a lasting relationship.','Build onboarding and retention programs.\nPartner with data and product teams on segmentation.\nRun experiments and share clear learnings.','5+ years in lifecycle or growth marketing.\nStrong analytical and copywriting skills.\nExperience with experimentation platforms.','Remote work stipend.\nTwice-yearly team gatherings.\nPaid parental leave.','open',daysAgo(2)],
-  ['21111111-1111-4111-8111-111111111106','Workplace Experience Coordinator','People','New York, NY · On-site','Part-time','Create a welcoming, organized workplace where teams can connect and do focused work.','Coordinate office operations and team events.\nManage vendors, supplies, and workplace requests.\nSupport new-hire arrivals.','2+ years in office, hospitality, or event operations.\nWarm and dependable communication.\nExcellent attention to detail.','Predictable three-day schedule.\nCommuter benefit.\nWellness reimbursement.','open',daysAgo(6)],
-  ['21111111-1111-4111-8111-111111111107','Technical Writer, Developer Platform','Engineering','Remote — Canada','Contract','Turn complex platform capabilities into clear guidance developers can trust.','Write API guides and task-based tutorials.\nTest documentation against working code.\nEstablish terminology and style patterns.','A portfolio of developer-facing documentation.\nComfort reading TypeScript and API schemas.\nIndependent project management.','Six-month engagement with extension potential.\nFlexible hours.\nRemote equipment allowance.','open',daysAgo(15)],
-  ['21111111-1111-4111-8111-111111111108','Finance Systems Analyst','Finance','Toronto, ON · Hybrid','Full-time','Improve the systems and reporting that give leaders a clear view of the business.','Own finance system administration.\nAutomate recurring reporting workflows.\nPartner with accounting on data quality.','4+ years in finance operations or systems.\nAdvanced spreadsheet and SQL skills.\nExperience documenting controls.','Annual learning budget.\nStock options.\nMedical and dental coverage.','closed',daysAgo(43)],
-].map(([id,title,department,location,employmentType,description,responsibilities,qualifications,benefits,status,postedDate]) => ({id,title,department,location,employmentType,description,responsibilities,qualifications,benefits,status,postedDate,createdAt:now,updatedAt:now,deletedAt:null} as Job))
+// Demo mode keeps its own copies so edits never mutate the shared seed rows.
+let demoJobs: Job[] = seedJobs.map((row) => ({ ...row }))
+let demoApplications: Application[] = seedApplications.map((row) => ({ ...row }))
+let demoNotes: ApplicationNote[] = seedNotes.map((row) => ({ ...row }))
 
-let demoApplications: Application[] = [
-  ['31111111-1111-4111-8111-111111111101',demoJobs[0].id,'Maya Chen','maya.chen@example.com','demo/maya-chen-resume.pdf','Maya-Chen-Resume.pdf','I have spent the last seven years designing calm, useful tools for complex workflows. Northstar’s focus on craft and close partnership is exactly the environment where I do my best work.','interview',5],
-  ['31111111-1111-4111-8111-111111111102',demoJobs[0].id,'Rafael Okafor','rafael.okafor@example.com','demo/rafael-okafor-resume.pdf','Rafael-Okafor-Resume.pdf','I am excited by the opportunity to mature a design system while staying close to customer problems.','reviewing',3],
-  ['31111111-1111-4111-8111-111111111103',demoJobs[1].id,'Anika Patel','anika.patel@example.com','demo/anika-patel-resume.pdf','Anika-Patel-Resume.pdf','Your approach to practical, people-centered operations strongly matches how I have led programs at distributed companies.','new',1],
-  ['31111111-1111-4111-8111-111111111104',demoJobs[2].id,'Jonas Berg','jonas.berg@example.com','demo/jonas-berg-resume.pdf','Jonas-Berg-Resume.pdf','I have built internal platform services for high-growth product teams and enjoy making reliability a shared, approachable practice. The opportunity to improve both infrastructure and developer experience is a strong match for my background.','interview',9],
-  ['31111111-1111-4111-8111-111111111105',demoJobs[2].id,'Nia Williams','nia.williams@example.com','demo/nia-williams-resume.pdf','Nia-Williams-Resume.pdf','My recent work focused on observability and self-service tooling for a distributed engineering organization. I would be excited to bring that experience to this platform team.','rejected',14],
-  ['31111111-1111-4111-8111-111111111106',demoJobs[4].id,'Lucía Moreno','lucia.moreno@example.com','demo/lucia-moreno-resume.pdf','Lucia-Moreno-Resume.pdf','I combine lifecycle strategy with hands-on experimentation, and recently rebuilt an onboarding program that improved activation while reducing message volume.','reviewing',2],
-  ['31111111-1111-4111-8111-111111111107',demoJobs[5].id,'Darius King','darius.king@example.com','demo/darius-king-resume.pdf','Darius-King-Resume.pdf','Creating a workplace where people feel anticipated and cared for has been the focus of my hospitality and office operations career. I would love to bring that approach to your New York team.','new',3],
-  ['31111111-1111-4111-8111-111111111108',demoJobs[6].id,'Sophie Tremblay','sophie.tremblay@example.com','demo/sophie-tremblay-resume.pdf','Sophie-Tremblay-Resume.pdf','I write documentation by testing every workflow as a developer would. My portfolio includes API references, migration guides, and tutorials for TypeScript SDKs.','hired',18],
-  ['31111111-1111-4111-8111-111111111109',demoJobs[3].id,'Tariq Hassan','tariq.hassan@example.com','demo/tariq-hassan-resume.pdf','Tariq-Hassan-Resume.pdf','I have led customer education programs from their first workshop through global certification launches, with a focus on measurable product adoption.','hired',31],
-  ['31111111-1111-4111-8111-111111111110',demoJobs[7].id,'Erin Cho','erin.cho@example.com','demo/erin-cho-resume.pdf','Erin-Cho-Resume.pdf','My background sits between finance operations and systems design. I have automated close reporting, improved data controls, and made reporting easier for non-finance partners to use.','rejected',39],
-].map(([id,jobId,candidateName,email,resumeKey,resumeName,coverLetter,status,days]) => ({id,jobId,candidateName,email,resumeKey,resumeName,coverLetter,status,submittedAt:new Date(now.getTime()-Number(days)*86400000),updatedAt:now,deletedAt:null} as Application))
+export type JobInput = Omit<NewJob, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
+export type ApplicationInput = Omit<
+  NewApplication,
+  'id' | 'submittedAt' | 'updatedAt' | 'deletedAt' | 'status'
+>
 
-let demoNotes: ApplicationNote[] = [
-  {id:'41111111-1111-4111-8111-111111111101',applicationId:demoApplications[0].id,content:'Strong portfolio review. Ask about facilitating alignment during the final interview.',author:'Sam Rivera',createdAt:new Date(now.getTime()-2*86400000),deletedAt:null},
-  {id:'41111111-1111-4111-8111-111111111102',applicationId:demoApplications[0].id,content:'Portfolio panel is confirmed for Thursday at 2:00 PM ET. Candidate has received the exercise and accessibility guidance.',author:'Inez Foster',createdAt:new Date(now.getTime()-3*86400000),deletedAt:null},
-  {id:'41111111-1111-4111-8111-111111111103',applicationId:demoApplications[1].id,content:'Good systems work and crisp visual craft. Recruiter screen should explore experience partnering with research.',author:'Sam Rivera',createdAt:new Date(now.getTime()-1*86400000),deletedAt:null},
-  {id:'41111111-1111-4111-8111-111111111104',applicationId:demoApplications[3].id,content:'Technical screen was strong. Jonas explained a thoughtful migration plan and made sensible reliability tradeoffs.',author:'Priya Nair',createdAt:new Date(now.getTime()-4*86400000),deletedAt:null},
-  {id:'41111111-1111-4111-8111-111111111105',applicationId:demoApplications[4].id,content:'Relevant observability background, but the role needs deeper production database experience than demonstrated in the panel.',author:'Priya Nair',createdAt:new Date(now.getTime()-8*86400000),deletedAt:null},
-  {id:'41111111-1111-4111-8111-111111111106',applicationId:demoApplications[5].id,content:'Metrics in the application are promising. Move to a 30-minute recruiter conversation and ask about experimentation volume.',author:'Inez Foster',createdAt:new Date(now.getTime()-1*86400000),deletedAt:null},
-  {id:'41111111-1111-4111-8111-111111111107',applicationId:demoApplications[7].id,content:'Offer accepted. Contract starts October 12; equipment request has been sent to IT.',author:'Sam Rivera',createdAt:new Date(now.getTime()-6*86400000),deletedAt:null},
-  {id:'41111111-1111-4111-8111-111111111108',applicationId:demoApplications[8].id,content:'Accepted offer after final conversation. Hiring manager is preparing the first-week learning plan.',author:'Inez Foster',createdAt:new Date(now.getTime()-12*86400000),deletedAt:null},
-]
+// --- Jobs --------------------------------------------------------------------
 
-export type JobInput = Omit<NewJob,'id'|'createdAt'|'updatedAt'|'deletedAt'>
-export type ApplicationInput = Omit<NewApplication,'id'|'submittedAt'|'updatedAt'|'deletedAt'|'status'>
-export async function listJobs(publicOnly=false){ if(isDemoMode()) return demoJobs.filter(j=>isNotDeleted(j)&&(!publicOnly||j.status==='open')); const db=getDb(); return db.select().from(jobs).where(publicOnly?and(notDeleted(jobs.deletedAt),eq(jobs.status,'open')):notDeleted(jobs.deletedAt)).orderBy(desc(jobs.postedDate)) }
-export async function getJob(id:string,publicOnly=false){ if(isDemoMode()) return demoJobs.find(j=>j.id===id&&isNotDeleted(j)&&(!publicOnly||j.status==='open')); const db=getDb(); const [row]=await db.select().from(jobs).where(and(eq(jobs.id,id),notDeleted(jobs.deletedAt),...(publicOnly?[eq(jobs.status,'open')]:[]))); return row }
-export async function createJob(input:JobInput){ if(isDemoMode()){const row={...input,id:randomUUID(),createdAt:new Date(),updatedAt:new Date(),deletedAt:null} as Job;demoJobs=[row,...demoJobs];return row} const [row]=await getDb().insert(jobs).values(input).returning();return row }
-export async function updateJob(id:string,patch:Partial<JobInput>){if(isDemoMode()){const i=demoJobs.findIndex(j=>j.id===id&&isNotDeleted(j));if(i<0)return;demoJobs[i]={...demoJobs[i],...patch,updatedAt:new Date()};return demoJobs[i]}const [row]=await getDb().update(jobs).set({...patch,updatedAt:new Date()}).where(and(eq(jobs.id,id),notDeleted(jobs.deletedAt))).returning();return row}
-export async function createApplication(input:ApplicationInput){if(isDemoMode()){const row={...input,id:randomUUID(),status:'new',submittedAt:new Date(),updatedAt:new Date(),deletedAt:null} as Application;demoApplications=[row,...demoApplications];return row}const [row]=await getDb().insert(applications).values(input).returning();return row}
-export async function listApplications(){if(isDemoMode())return demoApplications.filter(isNotDeleted);return getDb().select().from(applications).where(notDeleted(applications.deletedAt)).orderBy(desc(applications.submittedAt))}
-export async function getApplication(id:string){if(isDemoMode())return demoApplications.find(a=>a.id===id&&isNotDeleted(a));const [row]=await getDb().select().from(applications).where(and(eq(applications.id,id),notDeleted(applications.deletedAt)));return row}
-export async function updateApplication(id:string,status:string){if(isDemoMode()){const i=demoApplications.findIndex(a=>a.id===id);if(i<0)return;demoApplications[i]={...demoApplications[i],status,updatedAt:new Date()};return demoApplications[i]}const [row]=await getDb().update(applications).set({status,updatedAt:new Date()}).where(and(eq(applications.id,id),notDeleted(applications.deletedAt))).returning();return row}
-export async function listNotes(applicationId:string){if(isDemoMode())return demoNotes.filter(n=>n.applicationId===applicationId&&isNotDeleted(n));return getDb().select().from(applicationNotes).where(and(eq(applicationNotes.applicationId,applicationId),notDeleted(applicationNotes.deletedAt))).orderBy(desc(applicationNotes.createdAt))}
-export async function addNote(applicationId:string,content:string,author:string){if(isDemoMode()){const row={id:randomUUID(),applicationId,content,author,createdAt:new Date(),deletedAt:null};demoNotes=[row,...demoNotes];return row}const [row]=await getDb().insert(applicationNotes).values({applicationId,content,author}).returning();return row}
+export async function listJobs(publicOnly = false) {
+  if (isDemoMode()) return demoJobs.filter((j) => isNotDeleted(j) && (!publicOnly || j.status === 'open'))
+  const db = getDb()
+  return db
+    .select()
+    .from(jobs)
+    .where(publicOnly ? and(notDeleted(jobs.deletedAt), eq(jobs.status, 'open')) : notDeleted(jobs.deletedAt))
+    .orderBy(desc(jobs.postedDate))
+}
+
+export async function getJob(id: string, publicOnly = false) {
+  if (isDemoMode())
+    return demoJobs.find((j) => j.id === id && isNotDeleted(j) && (!publicOnly || j.status === 'open'))
+  const db = getDb()
+  const [row] = await db
+    .select()
+    .from(jobs)
+    .where(and(eq(jobs.id, id), notDeleted(jobs.deletedAt), ...(publicOnly ? [eq(jobs.status, 'open')] : [])))
+  return row
+}
+
+export async function createJob(input: JobInput) {
+  if (isDemoMode()) {
+    const row = {
+      ...input,
+      id: randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    } as Job
+    demoJobs = [row, ...demoJobs]
+    return row
+  }
+  const [row] = await getDb().insert(jobs).values(input).returning()
+  return row
+}
+
+export async function updateJob(id: string, patch: Partial<JobInput>) {
+  if (isDemoMode()) {
+    const i = demoJobs.findIndex((j) => j.id === id && isNotDeleted(j))
+    if (i < 0) return
+    demoJobs[i] = { ...demoJobs[i], ...patch, updatedAt: new Date() }
+    return demoJobs[i]
+  }
+  const [row] = await getDb()
+    .update(jobs)
+    .set({ ...patch, updatedAt: new Date() })
+    .where(and(eq(jobs.id, id), notDeleted(jobs.deletedAt)))
+    .returning()
+  return row
+}
+
+/**
+ * Soft-deletes a job along with its applications and their notes, so a
+ * deleted role never leaves orphaned candidates in the pipeline. Resumes stay
+ * in Blobs. Returns the deleted job, or `undefined` if it didn't exist.
+ */
+export async function deleteJob(id: string) {
+  const deletedAt = new Date()
+  if (isDemoMode()) {
+    const job = demoJobs.find((j) => j.id === id && isNotDeleted(j))
+    if (!job) return
+    job.deletedAt = deletedAt
+    for (const application of demoApplications) {
+      if (application.jobId === id && isNotDeleted(application))
+        softDeleteDemoApplication(application, deletedAt)
+    }
+    return job
+  }
+  return getDb().transaction(async (tx) => {
+    const [job] = await tx
+      .update(jobs)
+      .set({ deletedAt })
+      .where(and(eq(jobs.id, id), notDeleted(jobs.deletedAt)))
+      .returning()
+    if (!job) return
+    const removed = await tx
+      .update(applications)
+      .set({ deletedAt })
+      .where(and(eq(applications.jobId, id), notDeleted(applications.deletedAt)))
+      .returning({ id: applications.id })
+    if (removed.length) {
+      await tx
+        .update(applicationNotes)
+        .set({ deletedAt })
+        .where(
+          and(
+            inArray(
+              applicationNotes.applicationId,
+              removed.map((a) => a.id),
+            ),
+            notDeleted(applicationNotes.deletedAt),
+          ),
+        )
+    }
+    return job
+  })
+}
+
+// --- Applications ------------------------------------------------------------
+
+export async function createApplication(input: ApplicationInput) {
+  if (isDemoMode()) {
+    const row = {
+      ...input,
+      id: randomUUID(),
+      status: 'new',
+      submittedAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    } as Application
+    demoApplications = [row, ...demoApplications]
+    return row
+  }
+  const [row] = await getDb().insert(applications).values(input).returning()
+  return row
+}
+
+export async function listApplications(jobId?: string) {
+  if (isDemoMode()) return demoApplications.filter((a) => isNotDeleted(a) && (!jobId || a.jobId === jobId))
+  return getDb()
+    .select()
+    .from(applications)
+    .where(
+      jobId
+        ? and(eq(applications.jobId, jobId), notDeleted(applications.deletedAt))
+        : notDeleted(applications.deletedAt),
+    )
+    .orderBy(desc(applications.submittedAt))
+}
+
+export async function getApplication(id: string) {
+  if (isDemoMode()) return demoApplications.find((a) => a.id === id && isNotDeleted(a))
+  const [row] = await getDb()
+    .select()
+    .from(applications)
+    .where(and(eq(applications.id, id), notDeleted(applications.deletedAt)))
+  return row
+}
+
+export async function updateApplication(id: string, status: string) {
+  if (isDemoMode()) {
+    const i = demoApplications.findIndex((a) => a.id === id && isNotDeleted(a))
+    if (i < 0) return
+    demoApplications[i] = { ...demoApplications[i], status, updatedAt: new Date() }
+    return demoApplications[i]
+  }
+  const [row] = await getDb()
+    .update(applications)
+    .set({ status, updatedAt: new Date() })
+    .where(and(eq(applications.id, id), notDeleted(applications.deletedAt)))
+    .returning()
+  return row
+}
+
+/** Soft-deletes an application and its notes. The resume stays in Blobs. */
+export async function deleteApplication(id: string) {
+  const deletedAt = new Date()
+  if (isDemoMode()) {
+    const application = demoApplications.find((a) => a.id === id && isNotDeleted(a))
+    if (!application) return
+    softDeleteDemoApplication(application, deletedAt)
+    return application
+  }
+  return getDb().transaction(async (tx) => {
+    const [application] = await tx
+      .update(applications)
+      .set({ deletedAt })
+      .where(and(eq(applications.id, id), notDeleted(applications.deletedAt)))
+      .returning()
+    if (!application) return
+    await tx
+      .update(applicationNotes)
+      .set({ deletedAt })
+      .where(and(eq(applicationNotes.applicationId, id), notDeleted(applicationNotes.deletedAt)))
+    return application
+  })
+}
+
+function softDeleteDemoApplication(application: Application, deletedAt: Date) {
+  application.deletedAt = deletedAt
+  for (const note of demoNotes) {
+    if (note.applicationId === application.id && isNotDeleted(note)) note.deletedAt = deletedAt
+  }
+}
+
+// --- Notes -------------------------------------------------------------------
+
+export async function listNotes(applicationId: string) {
+  if (isDemoMode()) return demoNotes.filter((n) => n.applicationId === applicationId && isNotDeleted(n))
+  return getDb()
+    .select()
+    .from(applicationNotes)
+    .where(and(eq(applicationNotes.applicationId, applicationId), notDeleted(applicationNotes.deletedAt)))
+    .orderBy(desc(applicationNotes.createdAt))
+}
+
+export async function getNote(id: string) {
+  if (isDemoMode()) return demoNotes.find((n) => n.id === id && isNotDeleted(n))
+  const [row] = await getDb()
+    .select()
+    .from(applicationNotes)
+    .where(and(eq(applicationNotes.id, id), notDeleted(applicationNotes.deletedAt)))
+  return row
+}
+
+export async function addNote(applicationId: string, content: string, author: string) {
+  if (isDemoMode()) {
+    const row: ApplicationNote = {
+      id: randomUUID(),
+      applicationId,
+      content,
+      author,
+      createdAt: new Date(),
+      updatedAt: null,
+      deletedAt: null,
+    }
+    demoNotes = [row, ...demoNotes]
+    return row
+  }
+  const [row] = await getDb().insert(applicationNotes).values({ applicationId, content, author }).returning()
+  return row
+}
+
+export async function updateNote(id: string, content: string) {
+  if (isDemoMode()) {
+    const i = demoNotes.findIndex((n) => n.id === id && isNotDeleted(n))
+    if (i < 0) return
+    demoNotes[i] = { ...demoNotes[i], content, updatedAt: new Date() }
+    return demoNotes[i]
+  }
+  const [row] = await getDb()
+    .update(applicationNotes)
+    .set({ content, updatedAt: new Date() })
+    .where(and(eq(applicationNotes.id, id), notDeleted(applicationNotes.deletedAt)))
+    .returning()
+  return row
+}
+
+export async function deleteNote(id: string) {
+  if (isDemoMode()) {
+    const note = demoNotes.find((n) => n.id === id && isNotDeleted(n))
+    if (!note) return
+    note.deletedAt = new Date()
+    return note
+  }
+  const [row] = await getDb()
+    .update(applicationNotes)
+    .set({ deletedAt: new Date() })
+    .where(and(eq(applicationNotes.id, id), notDeleted(applicationNotes.deletedAt)))
+    .returning()
+  return row
+}

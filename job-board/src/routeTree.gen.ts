@@ -17,10 +17,10 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as JobsIdRouteImport } from './routes/jobs/$id'
 import { Route as AppAdminAuditRouteImport } from './routes/_app/admin/audit'
 import { Route as AppAdminEventsRouteImport } from './routes/_app/admin/events'
-import { Route as AppApplicationsIdRouteImport } from './routes/_app/applications/$id'
-import { Route as AppRecordsIndexRouteImport } from './routes/_app/records/index'
-import { Route as AppRecordsIdRouteImport } from './routes/_app/records/$id'
-import { Route as AppRecordsNewRouteImport } from './routes/_app/records/new'
+import { Route as AppRecruitingIndexRouteImport } from './routes/_app/recruiting/index'
+import { Route as AppRecruitingApplicationsIdRouteImport } from './routes/_app/recruiting/applications/$id'
+import { Route as AppRecruitingJobsIdRouteImport } from './routes/_app/recruiting/jobs/$id'
+import { Route as AppRecruitingJobsNewRouteImport } from './routes/_app/recruiting/jobs/new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -61,24 +61,25 @@ const AppAdminEventsRoute = AppAdminEventsRouteImport.update({
   path: '/admin/events',
   getParentRoute: () => AppRoute,
 } as any)
-const AppApplicationsIdRoute = AppApplicationsIdRouteImport.update({
-  id: '/applications/$id',
-  path: '/applications/$id',
+const AppRecruitingIndexRoute = AppRecruitingIndexRouteImport.update({
+  id: '/recruiting/',
+  path: '/recruiting/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppRecordsIndexRoute = AppRecordsIndexRouteImport.update({
-  id: '/records/',
-  path: '/records/',
+const AppRecruitingApplicationsIdRoute =
+  AppRecruitingApplicationsIdRouteImport.update({
+    id: '/recruiting/applications/$id',
+    path: '/recruiting/applications/$id',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppRecruitingJobsIdRoute = AppRecruitingJobsIdRouteImport.update({
+  id: '/recruiting/jobs/$id',
+  path: '/recruiting/jobs/$id',
   getParentRoute: () => AppRoute,
 } as any)
-const AppRecordsIdRoute = AppRecordsIdRouteImport.update({
-  id: '/records/$id',
-  path: '/records/$id',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRecordsNewRoute = AppRecordsNewRouteImport.update({
-  id: '/records/new',
-  path: '/records/new',
+const AppRecruitingJobsNewRoute = AppRecruitingJobsNewRouteImport.update({
+  id: '/recruiting/jobs/new',
+  path: '/recruiting/jobs/new',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -90,10 +91,10 @@ export interface FileRoutesByFullPath {
   '/jobs/$id': typeof JobsIdRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/events': typeof AppAdminEventsRoute
-  '/applications/$id': typeof AppApplicationsIdRoute
-  '/records/$id': typeof AppRecordsIdRoute
-  '/records/new': typeof AppRecordsNewRoute
-  '/records/': typeof AppRecordsIndexRoute
+  '/recruiting/': typeof AppRecruitingIndexRoute
+  '/recruiting/applications/$id': typeof AppRecruitingApplicationsIdRoute
+  '/recruiting/jobs/$id': typeof AppRecruitingJobsIdRoute
+  '/recruiting/jobs/new': typeof AppRecruitingJobsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -103,10 +104,10 @@ export interface FileRoutesByTo {
   '/jobs/$id': typeof JobsIdRoute
   '/admin/audit': typeof AppAdminAuditRoute
   '/admin/events': typeof AppAdminEventsRoute
-  '/applications/$id': typeof AppApplicationsIdRoute
-  '/records/$id': typeof AppRecordsIdRoute
-  '/records/new': typeof AppRecordsNewRoute
-  '/records': typeof AppRecordsIndexRoute
+  '/recruiting': typeof AppRecruitingIndexRoute
+  '/recruiting/applications/$id': typeof AppRecruitingApplicationsIdRoute
+  '/recruiting/jobs/$id': typeof AppRecruitingJobsIdRoute
+  '/recruiting/jobs/new': typeof AppRecruitingJobsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -118,10 +119,10 @@ export interface FileRoutesById {
   '/jobs/$id': typeof JobsIdRoute
   '/_app/admin/audit': typeof AppAdminAuditRoute
   '/_app/admin/events': typeof AppAdminEventsRoute
-  '/_app/applications/$id': typeof AppApplicationsIdRoute
-  '/_app/records/$id': typeof AppRecordsIdRoute
-  '/_app/records/new': typeof AppRecordsNewRoute
-  '/_app/records/': typeof AppRecordsIndexRoute
+  '/_app/recruiting/': typeof AppRecruitingIndexRoute
+  '/_app/recruiting/applications/$id': typeof AppRecruitingApplicationsIdRoute
+  '/_app/recruiting/jobs/$id': typeof AppRecruitingJobsIdRoute
+  '/_app/recruiting/jobs/new': typeof AppRecruitingJobsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -133,10 +134,10 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/admin/audit'
     | '/admin/events'
-    | '/applications/$id'
-    | '/records/$id'
-    | '/records/new'
-    | '/records/'
+    | '/recruiting/'
+    | '/recruiting/applications/$id'
+    | '/recruiting/jobs/$id'
+    | '/recruiting/jobs/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -146,10 +147,10 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/admin/audit'
     | '/admin/events'
-    | '/applications/$id'
-    | '/records/$id'
-    | '/records/new'
-    | '/records'
+    | '/recruiting'
+    | '/recruiting/applications/$id'
+    | '/recruiting/jobs/$id'
+    | '/recruiting/jobs/new'
   id:
     | '__root__'
     | '/'
@@ -160,10 +161,10 @@ export interface FileRouteTypes {
     | '/jobs/$id'
     | '/_app/admin/audit'
     | '/_app/admin/events'
-    | '/_app/applications/$id'
-    | '/_app/records/$id'
-    | '/_app/records/new'
-    | '/_app/records/'
+    | '/_app/recruiting/'
+    | '/_app/recruiting/applications/$id'
+    | '/_app/recruiting/jobs/$id'
+    | '/_app/recruiting/jobs/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -233,32 +234,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminEventsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/applications/$id': {
-      id: '/_app/applications/$id'
-      path: '/applications/$id'
-      fullPath: '/applications/$id'
-      preLoaderRoute: typeof AppApplicationsIdRouteImport
+    '/_app/recruiting/': {
+      id: '/_app/recruiting/'
+      path: '/recruiting'
+      fullPath: '/recruiting/'
+      preLoaderRoute: typeof AppRecruitingIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/records/': {
-      id: '/_app/records/'
-      path: '/records'
-      fullPath: '/records/'
-      preLoaderRoute: typeof AppRecordsIndexRouteImport
+    '/_app/recruiting/applications/$id': {
+      id: '/_app/recruiting/applications/$id'
+      path: '/recruiting/applications/$id'
+      fullPath: '/recruiting/applications/$id'
+      preLoaderRoute: typeof AppRecruitingApplicationsIdRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/records/$id': {
-      id: '/_app/records/$id'
-      path: '/records/$id'
-      fullPath: '/records/$id'
-      preLoaderRoute: typeof AppRecordsIdRouteImport
+    '/_app/recruiting/jobs/$id': {
+      id: '/_app/recruiting/jobs/$id'
+      path: '/recruiting/jobs/$id'
+      fullPath: '/recruiting/jobs/$id'
+      preLoaderRoute: typeof AppRecruitingJobsIdRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/records/new': {
-      id: '/_app/records/new'
-      path: '/records/new'
-      fullPath: '/records/new'
-      preLoaderRoute: typeof AppRecordsNewRouteImport
+    '/_app/recruiting/jobs/new': {
+      id: '/_app/recruiting/jobs/new'
+      path: '/recruiting/jobs/new'
+      fullPath: '/recruiting/jobs/new'
+      preLoaderRoute: typeof AppRecruitingJobsNewRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -267,19 +268,19 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAdminAuditRoute: typeof AppAdminAuditRoute
   AppAdminEventsRoute: typeof AppAdminEventsRoute
-  AppApplicationsIdRoute: typeof AppApplicationsIdRoute
-  AppRecordsIdRoute: typeof AppRecordsIdRoute
-  AppRecordsNewRoute: typeof AppRecordsNewRoute
-  AppRecordsIndexRoute: typeof AppRecordsIndexRoute
+  AppRecruitingIndexRoute: typeof AppRecruitingIndexRoute
+  AppRecruitingApplicationsIdRoute: typeof AppRecruitingApplicationsIdRoute
+  AppRecruitingJobsIdRoute: typeof AppRecruitingJobsIdRoute
+  AppRecruitingJobsNewRoute: typeof AppRecruitingJobsNewRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminAuditRoute: AppAdminAuditRoute,
   AppAdminEventsRoute: AppAdminEventsRoute,
-  AppApplicationsIdRoute: AppApplicationsIdRoute,
-  AppRecordsIdRoute: AppRecordsIdRoute,
-  AppRecordsNewRoute: AppRecordsNewRoute,
-  AppRecordsIndexRoute: AppRecordsIndexRoute,
+  AppRecruitingIndexRoute: AppRecruitingIndexRoute,
+  AppRecruitingApplicationsIdRoute: AppRecruitingApplicationsIdRoute,
+  AppRecruitingJobsIdRoute: AppRecruitingJobsIdRoute,
+  AppRecruitingJobsNewRoute: AppRecruitingJobsNewRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

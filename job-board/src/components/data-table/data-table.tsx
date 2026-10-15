@@ -14,7 +14,7 @@ export type DataTableColumn<TData extends RowData> = ColumnDef<typeof dataTableF
  * (`useTable` + the shared `dataTableFeatures` registration) with sorting,
  * global search, column filters, column visibility, and pagination baked in.
  *
- * Usage: `<DataTable columns={recordColumns} data={records} searchPlaceholder="Search records..." />`
+ * Usage: `<DataTable columns={jobColumns} data={jobs} searchPlaceholder="Search jobs..." />`
  */
 export function DataTable<TData extends RowData>({
   columns,

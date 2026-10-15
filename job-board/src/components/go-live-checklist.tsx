@@ -91,8 +91,19 @@ export function GoLiveChecklist() {
   const { authEnabled, deployed, user } = useAppContext()
   // The server snapshot is "dismissed" so the card never flashes during SSR
   // or hydration for someone who already dismissed it.
-  const dismissed = useSyncExternalStore(subscribe, () => read(DISMISS_KEY), () => 'true') === 'true'
-  const ticked = parseTicks(useSyncExternalStore(subscribe, () => read(MANUAL_KEY), () => ''))
+  const dismissed =
+    useSyncExternalStore(
+      subscribe,
+      () => read(DISMISS_KEY),
+      () => 'true',
+    ) === 'true'
+  const ticked = parseTicks(
+    useSyncExternalStore(
+      subscribe,
+      () => read(MANUAL_KEY),
+      () => '',
+    ),
+  )
   const [dismissedForNow, setDismissedForNow] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
 
@@ -149,17 +160,13 @@ export function GoLiveChecklist() {
     },
   ]
 
-  const isDone = (item: ChecklistItem) =>
-    item.done === 'manual' ? ticked.includes(item.id) : item.done
+  const isDone = (item: ChecklistItem) => (item.done === 'manual' ? ticked.includes(item.id) : item.done)
   const allRequiredDone = items.every((item) => !item.required || isDone(item))
   if (dismissed || dismissedForNow || allRequiredDone) return null
 
   const openItem = items.find((item) => item.id === openId) ?? null
   const toggleTick = (id: string) =>
-    write(
-      MANUAL_KEY,
-      JSON.stringify(ticked.includes(id) ? ticked.filter((t) => t !== id) : [...ticked, id]),
-    )
+    write(MANUAL_KEY, JSON.stringify(ticked.includes(id) ? ticked.filter((t) => t !== id) : [...ticked, id]))
 
   return (
     <>

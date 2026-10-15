@@ -15,10 +15,8 @@ apps. Read this before making changes.
   `SITE_ID` being unset to stay in-memory.
 - **One flag controls each non-demo toggle**: `DEFAULT_ROLE` (role assigned
   at signup, required once signups are enabled), `ALLOWED_SIGNUP_DOMAIN`
-  (optional — restricts signups to one exact email domain, no subdomains),
-  and `PURGE_ENABLED`/`RECORD_RETENTION_DAYS` (hard purge of soft-deleted
-  records — off by default, `RECORD_RETENTION_DAYS` required once
-  `PURGE_ENABLED=true`). Auth is detected by asking the platform whether Identity is on
+  (optional — restricts signups to one exact email domain, no subdomains).
+  Auth is detected by asking the platform whether Identity is on
   (`isAuthEnabled()` is async — always `await` it); local auth uses `AUTH_DEV_USER` under `netlify dev`.
   All env-backed helpers live in `src/config/flags.ts` — read `process.env`
   only inside those functions, never at module scope, never anywhere else.
@@ -32,13 +30,19 @@ apps. Read this before making changes.
   `/public/logo.svg`).
 - **Data layer pattern**: `src/data/<entity>.ts` has `if (isDemoMode())`
   branches inline — no interface + two implementations. To add an entity,
-  copy `src/data/records.ts`'s shape.
+  copy `src/data/recruiting.ts`'s shape. Sample rows live in
+  `src/data/demo/recruiting.ts`, shared by demo mode and `npm run db:seed`.
+- **Recruiting lives under `/recruiting`**: the hiring overview, jobs
+  (`/recruiting/jobs/new`, `/recruiting/jobs/$id`) and applications
+  (`/recruiting/applications/$id`). The public careers page is `/` and
+  `/jobs/$id`. Tables are `jobs`, `applications` and `application_notes`.
 - **Soft delete is always on, not configurable**: `src/db/soft-delete.ts`'s
   `softDeleteColumns` (spread into a table) and `notDeleted`/`isNotDeleted`
-  (the shared query filter/predicate) are how `records` excludes
-  soft-deleted rows by default. "Delete" sets `deletedAt`; it never issues a
-  real `DELETE`. Permanent purge is a separate, opt-in concern — see README
-  > Soft delete — and is not audit-logged.
+  (the shared query filter/predicate) are how every table excludes
+  soft-deleted rows. "Delete" sets `deletedAt`; it never issues a real
+  `DELETE`. Deleting a job also soft-deletes its applications and notes;
+  deleting an application also soft-deletes its notes. There is no
+  permanent purge — see README > Soft delete.
 - **Route loaders/components must never import `src/data/*.ts` or
   `src/config/flags.ts` directly.** Both pull in Node-only code
   (`drizzle-orm/netlify-db`) or raw `process.env` reads that break the
@@ -57,8 +61,9 @@ apps. Read this before making changes.
   are always audit-logged via `audit()`; read-level logging via
   `auditRead(action, entity, entityId)` (same file) is opt-in and NOT wired
   into any getter automatically — call it explicitly from a sensitive
-  getter's server function, see `src/server/example-audited-getter.ts` for
-  the reference pattern and README > Audit logging.
+  getter's server function, see `getApplicationServer` in
+  `src/server/recruiting.ts` for the reference pattern and README > Audit
+  logging.
 - **Uploads fail closed until configured**: `netlify/functions/upload.mts`
   and `netlify/functions/files.mts` (`/api/upload`, `/api/files/:key`) 403
   unconditionally unless Netlify Identity auth is enabled **and**
@@ -76,4 +81,4 @@ apps. Read this before making changes.
   touching the DB schema.
 
 If you're not sure whether something belongs in demo mode or the DB path,
-check `src/data/records.ts` for the reference pattern.
+check `src/data/recruiting.ts` for the reference pattern.

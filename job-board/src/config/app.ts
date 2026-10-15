@@ -41,7 +41,7 @@ export const appConfig = {
       { label: 'Open roles', to: '/' as const },
       { label: 'About', to: '/about' as const },
     ],
-    internal: [{ label: 'Recruiting', to: '/records' as const }],
+    internal: [{ label: 'Recruiting', to: '/recruiting' as const }],
     admin: [
       { label: 'Audit log', to: '/admin/audit' as const },
       { label: 'Usage events', to: '/admin/events' as const },

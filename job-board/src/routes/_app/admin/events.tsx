@@ -34,7 +34,9 @@ function EventsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Usage events</h1>
-        <p className="text-muted-foreground">Page views and record mutations tracked via `trackEvent()`.</p>
+        <p className="text-muted-foreground">
+          Page views, plus jobs and applications created, changed or deleted, tracked via `trackEvent()`.
+        </p>
       </div>
 
       <Card>

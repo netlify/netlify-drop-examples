@@ -153,36 +153,6 @@ export function getAllowedSignupDomain(): string | undefined {
 }
 
 /**
- * Whether the scheduled hard-purge job (`netlify/functions/purge-deleted-records.mts`)
- * is allowed to permanently delete soft-deleted records. Off by default and
- * genuinely inert when off — nothing reads `RECORD_RETENTION_DAYS` at all
- * unless this is `true`. Soft delete itself (see `src/db/soft-delete.ts`) is
- * always on and unrelated to this flag; this only gates permanent purging.
- */
-export function isPurgeEnabled(): boolean {
-  return process.env.PURGE_ENABLED === 'true'
-}
-
-/**
- * How many days a soft-deleted record is retained before the purge job
- * permanently deletes it. Only ever called after confirming
- * `isPurgeEnabled()` — a retention period is a compliance decision, not a
- * safe engineering default, so this throws rather than guessing a number
- * when purge is turned on but no retention window has been configured.
- */
-export function getRetentionDays(): number {
-  const value = process.env.RECORD_RETENTION_DAYS
-  const days = Number(value)
-  if (!value || !Number.isFinite(days) || days <= 0) {
-    throw new Error(
-      'RECORD_RETENTION_DAYS is not set (or invalid). PURGE_ENABLED=true requires an explicit, ' +
-        'positive number of days — there is no safe default for a data-retention policy. See README > Soft delete.',
-    )
-  }
-  return days
-}
-
-/**
  * Connection details for Netlify Database, read from the env vars Netlify
  * sets on every deploy. `NETLIFY_DB_URL` is provisioned by the platform
  * (`@netlify/database`), never by hand. `NETLIFY_DB_DRIVER=server` means a

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { auditRead } from './server'
 import { listAudit } from '@/data/audit'
-import { listRecords, getRecord } from '@/data/records'
+import { listJobs, getJob } from '@/data/recruiting'
 
 const { mockGetIdentityConfig, mockGetUser } = vi.hoisted(() => ({
   mockGetIdentityConfig: vi.fn((): unknown => null),
@@ -57,13 +57,13 @@ describe('auditRead', () => {
     expect((await listAudit()).length).toBe(before)
   })
 
-  it('produces zero new audit entries when calling the existing records getters, proving read-logging stays opt-in', async () => {
+  it('produces zero new audit entries when calling the plain job getters, proving read-logging stays opt-in', async () => {
     enableAuditedSession()
 
     const before = (await listAudit()).length
-    const records = await listRecords()
-    if (records[0]) {
-      await getRecord(records[0].id)
+    const jobs = await listJobs()
+    if (jobs[0]) {
+      await getJob(jobs[0].id)
     }
 
     expect((await listAudit()).length).toBe(before)

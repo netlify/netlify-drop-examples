@@ -61,9 +61,9 @@ describe('SetupPrompt', () => {
     setContext({ officialDemoSite: true, deployed: true })
     render(<SetupPrompt />)
 
-    expect(
-      screen.getByRole('link', { name: 'Make this app yours on Netlify' }).getAttribute('href'),
-    ).toBe(appConfig.dropUrl)
+    expect(screen.getByRole('link', { name: 'Make this app yours on Netlify' }).getAttribute('href')).toBe(
+      appConfig.dropUrl,
+    )
     expect(screen.queryByRole('complementary', { name: 'Setup checklist' })).toBeNull()
   })
 
@@ -110,7 +110,7 @@ describe('SetupPrompt', () => {
     expect(screen.queryByRole('button', { name: /Deploy/ })).toBeNull()
   })
 
-  it('points every row\'s Learn more at a template page anchor', () => {
+  it("points every row's Learn more at a template page anchor", () => {
     render(<SetupPrompt />)
     for (const title of [
       /Check who can open your app/,

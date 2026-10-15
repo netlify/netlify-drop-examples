@@ -89,7 +89,7 @@ export async function audit(
  * Action strings should end in `.viewed` (e.g. `employee-record.viewed`),
  * mirroring `audit()`'s `.created`/`.updated`/`.deleted` convention —
  * `/admin/audit` uses that suffix to badge a row as a read vs. a mutation.
- * See `src/server/example-audited-getter.ts` for a reference wiring.
+ * See `getApplicationServer` in `src/server/recruiting.ts` for a reference wiring.
  */
 export async function auditRead(action: string, entity: string, entityId: string): Promise<void> {
   if (!(await isAuthEnabled())) return

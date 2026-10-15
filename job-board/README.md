@@ -16,10 +16,9 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. Locally the app runs on sample data: open roles,
-applications, and the recruiting pipeline all work against an in-memory
-dataset with a built-in demo user. Data resets on every restart. Nothing to
-configure.
+Open http://localhost:3000. You're on sample data: the careers page, the
+recruiting pipeline and every form work against an in-memory dataset with a
+built-in demo user. Data resets on every cold start. Nothing to configure.
 
 ## Publish it with Netlify Drop
 
@@ -58,7 +57,7 @@ is open to anyone with the URL until you enable Identity. The in-app
 2. Confirm Netlify Database is connected under **Data & storage**. The app
    uses the database automatically; you do not need to set `NETLIFY_DB_URL`
    by hand. If you connect the database after the first deploy, redeploy the
-   site so migrations run before you add records.
+   site so migrations run before you add jobs.
 3. If this app should be private, enable Identity in the Netlify dashboard.
    The app notices within about a minute, with no redeploy, and visitors are
    then sent to `/login` until they sign in.
@@ -70,9 +69,8 @@ is open to anyone with the URL until you enable Identity. The in-app
    account. After that, invite everyone else from the Identity tab, or leave
    public signups on if that's what your site needs.
 5. Optional setup lives on that same environment variables page:
-   `ALLOWED_SIGNUP_DOMAIN` for signup restrictions,
-   `PURGE_ENABLED`/`RECORD_RETENTION_DAYS` for permanent deletion of
-   soft-deleted records, and notification keys for Slack or email.
+   `ALLOWED_SIGNUP_DOMAIN` for signup restrictions, and notification keys
+   for Slack or email.
 
 ## Go live checklist
 
@@ -127,13 +125,9 @@ vertical — full detail is in the linked section, this is just orientation.
   valid — **the base template does not define a role taxonomy**; your
   vertical decides what roles exist.
 - **[Soft delete](#soft-delete)**: on by default, not configurable. Deleting
-  a record marks it (`deletedAt`), it's never actually removed. Every
-  entity that opts in shares the same `softDeleteColumns`/`notDeleted`/
+  a job, application or note marks it (`deletedAt`); it's never actually
+  removed. Every table shares the same `softDeleteColumns`/`notDeleted`/
   `isNotDeleted` primitives instead of reimplementing filtering per table.
-- **[Hard purge](#soft-delete)**: opt-in and off by default via
-  `PURGE_ENABLED` + `RECORD_RETENTION_DAYS`. There is no default retention
-  window — a retention period is a compliance decision the deploying team
-  makes explicitly, not a number this template guesses.
 - **Not provided (yet)** — don't assume these exist:
   - **Audience/targeting** (who a resource is visible to, as distinct from
     what a role permits) — deferred pending a second vertical to design
@@ -141,7 +135,8 @@ vertical — full detail is in the linked section, this is just orientation.
   - **Bulk/CSV export** from the data table.
   - **PII/data-sensitivity tiering** (field-level encryption, reidentification
     thresholds, etc.) — a vertical's own responsibility if it needs this; see
-    the note in "Soft delete" on how that interacts with `deletedAt`/purge.
+    the note in "Soft delete" on how that interacts with `deletedAt`.
+  - **Permanent deletion** of soft-deleted rows, or a retention policy.
 
 ## Environment variables
 
@@ -151,8 +146,6 @@ vertical — full detail is in the linked section, this is just orientation.
 | `AUTH_DEV_USER`                                          | —       | Local-dev-only fake session, e.g. `{"email":"you@example.com","roles":["admin"]}`. Turns auth on only when running under `netlify dev` (`NETLIFY_DEV=true`). |
 | `DEFAULT_ROLE`                                           | —       | Required once signups are enabled — the role assigned to new users at signup. See "Roles" below. No default; signups fail loudly until this is set.          |
 | `ALLOWED_SIGNUP_DOMAIN`                                  | —       | Optional — restricts signups to one exact email domain (no subdomains). Unset means no restriction. See "Roles" below.                                       |
-| `PURGE_ENABLED`                                          | `false` | `true` turns on permanent deletion of already soft-deleted records. Off is genuinely inert — no purge job runs. See "Soft delete" below.                     |
-| `RECORD_RETENTION_DAYS`                                  | —       | Required once `PURGE_ENABLED=true` — days a soft-deleted record is kept before permanent purge. No default; purge fails loudly until this is set.            |
 | `SLACK_WEBHOOK_URL`                                      | —       | Enables the `slack` notify channel.                                                                                                                          |
 | `RESEND_API_KEY`, `NOTIFY_EMAIL_FROM`, `NOTIFY_EMAIL_TO` | —       | Enables the `email` notify channel (via [Resend](https://resend.com)).                                                                                       |
 
@@ -202,7 +195,7 @@ With auth on:
 - Every new signup gets `DEFAULT_ROLE` in `app_metadata.roles` automatically,
   except the very first, which becomes the admin (see "Roles" below) — no
   manual dashboard step required for the common case.
-- Every route under `/records` and `/admin` redirects anonymous visitors to
+- Every route under `/recruiting` and `/admin` redirects anonymous visitors to
   `/login` — but the **real** authorization boundary is `requireUser()` /
   `requireRole()` inside each server function (`src/server/*.ts`), which runs
   regardless of how the request got there.
@@ -321,94 +314,57 @@ belongs to whatever vertical is built on top.
 **Mutations are always logged, not configurable:** `audit(action, entity,
 entityId, before?, after?)`, from `src/auth/server.ts`, writes an entry
 (actor, action, before/after) for every create/update/delete. It's already
-called from the three `src/server/records.ts` server functions
-(`record.created`/`record.updated`/`record.deleted`) — copy that call
-pattern for any new entity's mutations. No-ops when Identity auth is off.
+called from every mutation in `src/server/recruiting.ts` (`job.created`,
+`application.updated`, `application-note.deleted` and so on) — copy that
+call pattern for any new entity's mutations. No-ops when Identity auth is off.
 
 **Reads are opt-in, per call site:** `auditRead(action, entity, entityId)`,
 also from `src/auth/server.ts`, is the read counterpart — same persistence
 path and actor resolution as `audit()`, just no before/after (a read has no
-diff). **Nothing calls this automatically.** In particular, `records`'
-`getRecord`/`listRecords` do not call it — `records` is reference demo data,
-not sensitive, and logging every view of it would just be noise that trains
-people to ignore `/admin/audit`. Call `auditRead()` explicitly from the
-specific getter(s) that need a "who viewed this" trail (e.g. EEO fields,
-attributed survey responses), using an action string ending in `.viewed`
-(mirroring `audit()`'s `.created`/`.updated`/`.deleted` convention — see
-`/admin/audit`'s Read/Change badge, which keys off that suffix). See
-`src/server/example-audited-getter.ts` for a complete reference
-implementation — copy it, point it at your real sensitive getter, done.
+diff). **Nothing calls this automatically.** Job listings aren't logged:
+they're public, and logging every view would be noise that trains people to
+ignore `/admin/audit`. Opening an application is: `getApplicationServer` in
+`src/server/recruiting.ts` calls `auditRead('application.viewed', …)`
+because it shows a candidate's contact details, resume and private notes.
+Copy that call into any other getter that needs a "who viewed this" trail,
+using an action string ending in `.viewed` (mirroring `audit()`'s
+`.created`/`.updated`/`.deleted` convention — see `/admin/audit`'s
+Read/Change badge, which keys off that suffix).
 
 ## Soft delete
 
-Two distinct concepts, kept strictly separate, with different default postures:
+**Always on, not configurable.** Deleting marks a row deleted (`deletedAt`)
+and excludes it from every query, while keeping it in the database. There's
+no vertical for which "deletions are silently unrecoverable" is the right
+default.
 
-1. **Soft delete** — marking a record deleted and excluding it from default
-   queries, while keeping it recoverable in the database. **Always on, not
-   configurable.** There's no vertical for which "deletions are silently
-   unrecoverable" is the right default.
-2. **Hard purge** — permanently destroying a soft-deleted record after a
-   retention window elapses. **Opt-in, off by default**, gated by two
-   separate settings so the safe default (off) can never be confused with an
-   unsafe default retention number.
+From `src/db/soft-delete.ts`:
 
-**Soft delete**, from `src/db/soft-delete.ts`:
-
-- `softDeleteColumns` — spread into a `pgTable(...)` definition (see
-  `records` in `src/db/schema.ts`) rather than repeating a `deletedAt`
-  column by hand.
+- `softDeleteColumns` — spread into a `pgTable(...)` definition (see `jobs`
+  in `src/db/schema.ts`) rather than repeating a `deletedAt` column by hand.
 - `notDeleted(column)` / `isNotDeleted(row)` — the shared query filter
-  (DB mode) and predicate (demo mode) every entity's `list`/`get` functions
-  use instead of an ad hoc `WHERE`/`.filter()` per call site.
-- `deleteRecord`/`deleteRecordServer` set `deletedAt`; they never issue a
-  real `DELETE`. `record.deleted` audit entries (see `/admin/audit`) mean
-  the record was soft-deleted (recoverable via `deletedAt`, at the DB layer
-  only — no restore UI ships in the base template), **not** physically
-  destroyed; only an actual purge run removes the row, and purge is not
-  itself audit-logged (see scope below).
+  (DB mode) and predicate (demo mode) every `list`/`get`/`update` function in
+  `src/data/recruiting.ts` uses instead of an ad hoc `WHERE`/`.filter()`.
 
-**Hard purge:**
+What each delete covers:
 
-- `PURGE_ENABLED` (default `false`) — when off, no purge job runs, ever;
-  `RECORD_RETENTION_DAYS` is never even read.
-- `RECORD_RETENTION_DAYS` — only read (and only required) once
-  `PURGE_ENABLED=true`. No default: a retention period is a compliance
-  decision the deploying team has to make explicitly, not a number this
-  template should guess.
-- `netlify/functions/purge-deleted-records.mts` is a scheduled Netlify
-  Function (daily, `0 3 * * *`) that no-ops unless `PURGE_ENABLED=true`,
-  then hard-deletes records soft-deleted longer than `RECORD_RETENTION_DAYS`
-  ago via `purgeExpiredRecords()` in `src/data/records.ts`. Copy this file
-  for any other entity that opts into soft delete.
+- **Job** — the job, its applications and their notes, in one transaction,
+  so a deleted role never leaves orphaned candidates in the pipeline.
+  Closing a job (status `closed`) is the way to stop applications but keep
+  the candidates.
+- **Application** — the application and its notes. Setting the status to
+  Rejected is the way to keep a record of the decision.
+- **Note** — just the note.
 
-**Scope, explicitly:** one global `RECORD_RETENTION_DAYS` (no per-table
-overrides), no audit trail beyond `deletedAt` itself (purge's only
-observability is its own function return), and no restore/undelete UI —
-recoverability at the data layer is the goal, not a build-out of tooling to
-use it.
+`job.deleted`, `application.deleted` and `application-note.deleted` audit
+entries mean the row was soft-deleted, not destroyed. Resumes stay in Netlify
+Blobs. There is no restore UI and no permanent purge: if your team needs a
+retention policy (for example, deleting candidate data after a set period),
+that's a compliance decision to make and build explicitly.
 
-**This base template has no concept of data-sensitivity tiers or
-reidentification thresholds**, and this mechanism doesn't invent one. If
-your vertical layers field-level encryption, minimum-group-size reveal
-thresholds, or similar sensitivity handling on top (e.g. a survey results
-dashboard), you're responsible for defining how that logic interacts with
-`deletedAt`/purge — the base template doesn't assume anything about it.
-
-**Opting `records` out:** `records` ships with soft delete already wired in
-as the _reference_ implementation for the mechanism above, not as
-load-bearing infrastructure you're required to keep. If a vertical
-genuinely doesn't want soft delete on `records`, revert these three touch
-points:
-
-1. Remove the `...softDeleteColumns` spread (and its index) from the
-   `records` table in `src/db/schema.ts`, and run `npm run db:generate` for
-   the migration that drops the column.
-2. Remove the `notDeleted`/`isNotDeleted` filters from `listRecords`,
-   `getRecord`, and `updateRecord` in `src/data/records.ts`.
-3. Change `deleteRecord` back to a real `db.delete(records).where(eq(records.id, id))`
-   (DB branch) / array splice (demo branch), and delete
-   `purgeExpiredRecords` and `netlify/functions/purge-deleted-records.mts`
-   along with it — a hard-delete-only entity has nothing left to purge.
+**This app has no concept of data-sensitivity tiers**, and this mechanism
+doesn't invent one. If you layer field-level encryption or similar on top,
+you're responsible for defining how it interacts with `deletedAt`.
 
 ## Database
 
@@ -417,8 +373,9 @@ Netlify provisions it and applies every migration in
 `netlify/database/migrations/` before the deploy goes live. There is nothing to
 switch on. Locally you stay on sample data.
 
-Optionally seed a deployed database with the same sample data (safe to
-re-run, via `onConflictDoNothing`):
+Optionally seed a deployed database with the same sample jobs, applications
+and notes (safe to re-run, via `onConflictDoNothing`). Seeded applications
+point at resume files that don't exist, so "Open resume" 404s for them:
 
 ```bash
 npm run db:seed
@@ -469,20 +426,22 @@ The uploader's client code shows a specific "uploads are disabled" message
 when step 1 or 2 is the reason for a `403`, distinct from a plain
 authorization failure at step 3.
 
-It isn't attached to any entity by default. To attach an upload to a record,
-store the returned `{ key, url }` on the record (add a column in
-`src/db/schema.ts`, thread it through `src/data/records.ts`, and render it in
-`src/routes/_app/records/$id.tsx`).
+Candidate resumes don't use this endpoint: applicants have no account, so
+they upload through `/api/candidate-resume`
+(`netlify/functions/candidate-resume.mts`), which accepts one PDF or Word
+file up to 4 MB and stores it under `candidate-resumes/`.
+`submitApplicationServer` refuses any other key. Recruiters then download
+resumes through `/api/files/:key`, gated by `uploadAllowedRoles` as above.
 
 ## Extension points
 
 - **Add an entity**: `src/db/schema.ts` (table + `$inferSelect`/`$inferInsert`
   types) → `src/data/<entity>.ts` (demo/DB branches, same pattern as
-  `records.ts`) → `src/server/<entity>.ts` (`createServerFn` wrappers with
-  Zod validation) → `src/routes/_app/<entity>/` (list/detail/new routes). If
-  the entity needs retention, spread `softDeleteColumns` into its table and
-  use `notDeleted`/`isNotDeleted` in its `list`/`get` functions — see "Soft
-  delete" above.
+  `recruiting.ts`) → `src/server/<entity>.ts` (`createServerFn` wrappers with
+  Zod validation) → `src/routes/_app/<area>/` (list/detail/new routes, like
+  `src/routes/_app/recruiting/`). Spread `softDeleteColumns` into its table
+  and use `notDeleted`/`isNotDeleted` in its `list`/`get` functions — see
+  "Soft delete" above.
 - **Branding**: edit `src/config/app.ts` only — product name, tagline, logo
   path, and brand colors. `src/components/brand-theme.tsx` and
   `src/components/app-shell.tsx` read from it; nothing else should hardcode
@@ -531,11 +490,10 @@ src/db/schema.ts          # Drizzle schema (source of truth for the DB shape)
 src/db/soft-delete.ts      # deletedAt column mixin + shared query filter helpers
 src/data/                 # one file per entity, demo/DB branches inside
 src/server/                # createServerFn wrappers (Zod validation, auth, audit)
-                              # example-audited-getter (opt-in read-audit reference)
 src/auth/                  # session resolution, route guards, login UI
 src/routes/                 # file-based routes (TanStack Router)
 src/components/              # shadcn ui/, data-table/, forms/, states/
 netlify/functions/            # notify, upload, files, events (background/HTTP)
                               # identity (signup role hook), example-protected (role-gate reference)
-                              # purge-deleted-records (scheduled hard-purge reference)
+                              # candidate-resume (public resume upload)
 ```

@@ -8,8 +8,6 @@ import {
   clearAuthEnabledCache,
   getDefaultRole,
   getAllowedSignupDomain,
-  isPurgeEnabled,
-  getRetentionDays,
 } from './flags'
 
 const { mockGetIdentityConfig } = vi.hoisted(() => ({
@@ -201,50 +199,5 @@ describe('getAllowedSignupDomain', () => {
   it('returns the configured domain, trimmed and lowercased', () => {
     process.env.ALLOWED_SIGNUP_DOMAIN = '  Acme.Com  '
     expect(getAllowedSignupDomain()).toBe('acme.com')
-  })
-})
-
-describe('isPurgeEnabled', () => {
-  beforeEach(() => {
-    delete process.env.PURGE_ENABLED
-  })
-
-  it('is false by default', () => {
-    expect(isPurgeEnabled()).toBe(false)
-  })
-
-  it('is true only when PURGE_ENABLED is exactly "true"', () => {
-    process.env.PURGE_ENABLED = 'true'
-    expect(isPurgeEnabled()).toBe(true)
-
-    process.env.PURGE_ENABLED = 'yes'
-    expect(isPurgeEnabled()).toBe(false)
-  })
-})
-
-describe('getRetentionDays', () => {
-  afterEach(() => {
-    delete process.env.RECORD_RETENTION_DAYS
-  })
-
-  it('throws when RECORD_RETENTION_DAYS is unset', () => {
-    delete process.env.RECORD_RETENTION_DAYS
-    expect(() => getRetentionDays()).toThrow(/RECORD_RETENTION_DAYS is not set/)
-  })
-
-  it('throws when RECORD_RETENTION_DAYS is zero, negative, or non-numeric', () => {
-    process.env.RECORD_RETENTION_DAYS = '0'
-    expect(() => getRetentionDays()).toThrow()
-
-    process.env.RECORD_RETENTION_DAYS = '-5'
-    expect(() => getRetentionDays()).toThrow()
-
-    process.env.RECORD_RETENTION_DAYS = 'not-a-number'
-    expect(() => getRetentionDays()).toThrow()
-  })
-
-  it('returns the configured value', () => {
-    process.env.RECORD_RETENTION_DAYS = '30'
-    expect(getRetentionDays()).toBe(30)
   })
 })
