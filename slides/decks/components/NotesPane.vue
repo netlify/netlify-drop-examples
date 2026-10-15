@@ -73,7 +73,7 @@ onBeforeUnmount(() => unlock?.())
     <textarea
       v-model="draft"
       class="deck-notes-text"
-      placeholder="Add a note for this slide. Only logged-in editors can see it."
+      placeholder="Add a note for this slide. Only signed-in people can see it."
       maxlength="5000"
       aria-label="Notes for this slide"
       @focus="onFocus"

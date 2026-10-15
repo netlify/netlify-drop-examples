@@ -27,6 +27,7 @@
     "netlify/functions/edits.mts",
     "netlify/functions/identity.mts",
     "netlify/functions/notes.mts",
+    "netlify/lib/domains.mts",
     "netlify/lib/store.mts",
     "package-lock.json",
     "scripts/build-decks.mjs",

@@ -18,20 +18,24 @@ This repo is a Slidev deck template. It is not an app.
   state in `decks/sidebar.ts` and the `b` shortcut in `decks/setup/shortcuts.ts`. Its styles are at the end of `style.css`. It imports
   Slidev client internals (`@slidev/client/...`), so re-check it after any
   Slidev upgrade. Presenter mode is off (`presenter: false`).
-- **Build** with `npm run build`: `scripts/build-index.mjs` writes the home page,
+- **Build** with `npm run build`: `scripts/build-index.mjs` writes the home page and `/about/`,
   then `scripts/build-decks.mjs` builds each deck into `dist/<slug>/`. Check
   `dist/_redirects` lists every deck so deep links work on Netlify.
 - **Text editing and slide notes** are the app features: `netlify/functions/edits.mts`
-  and `notes.mts` (Blobs, sharing `netlify/lib/store.mts`) and `identity.mts`, with the
+  and `notes.mts` (Blobs, sharing `netlify/lib/store.mts`) and the Identity hooks in
+  `identity.mts`, with the
   client in `decks/edits.ts`, `decks/notes.ts`, `edits-core.ts`,
   `decks/components/EditLogin.vue`, `decks/components/NotesPane.vue` and the nav
   edit buttons in `decks/custom-nav-controls.vue` (Slidev's own nav bar is hidden
   in `style.css`; only these stay, and the bar is hidden when they are absent). Edits are an overlay keyed by a hash
   of the original text; the deck file is never rewritten, and edits are stored per
   deck. Notes are keyed by slide number plus a hash of the slide's title, and
-  unlike edits they are readable only by logged-in editors. Both are off by
-  default (`editing: false` in the deck's headmatter, the demo setting);
-  `editing: true` enables them.
+  unlike edits they are readable only by signed-in people. Any signed-in user can
+  edit (there are no roles; Identity's Registration setting, invite only, decides who
+  can sign in), and both switch on by themselves when Identity is enabled.
+  The optional `ALLOWED_EMAIL_DOMAINS` env var (comma-separated, see
+  `netlify/lib/domains.mts`) narrows sign-in to some email domains, in the hooks and again on
+  every edits and notes request.
 - **Don't reintroduce other app code.** No further server routes, database or UI
   component libraries. The TanStack Start template this repo started from was
   removed on purpose.

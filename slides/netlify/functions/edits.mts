@@ -1,7 +1,7 @@
 import type { Config, Context } from '@netlify/functions'
 import type { EditMap } from '../../edits-core.ts'
 import { parseChange } from '../../edits-core.ts'
-import { conflict, deckOf, json, openStore, rejectCrossOrigin, rejectNonEditor, saveChange } from '../lib/store.mts'
+import { conflict, deckOf, json, openStore, rejectCrossOrigin, rejectSignedOut, saveChange } from '../lib/store.mts'
 
 export default async (req: Request, context: Context) => {
   const store = openStore(context)
@@ -20,7 +20,7 @@ export default async (req: Request, context: Context) => {
   if (req.method !== 'PUT')
     return json({ error: 'Method not allowed' }, 405)
 
-  const rejected = rejectCrossOrigin(req) ?? await rejectNonEditor()
+  const rejected = rejectCrossOrigin(req) ?? await rejectSignedOut()
   if (rejected)
     return rejected
 
