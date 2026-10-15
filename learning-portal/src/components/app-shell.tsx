@@ -5,6 +5,7 @@ import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
 import { ModeToggle } from '@/components/mode-toggle'
 import { SetupPrompt } from '@/components/setup-prompt'
+import { IdentityOffBanner } from '@/components/identity-off-banner'
 import { UserMenu } from '@/components/user-menu'
 import { Badge, Button } from 'app-packs-ui'
 import {
@@ -60,7 +61,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             to="/"
             className="flex items-center gap-2 rounded-md font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
-            <img src={appConfig.logo.src} alt="" className="size-7" />
+            {/* width/height keep the logo 28px even if the stylesheet hasn't applied
+              yet (the SVG has no intrinsic size and would fill its container). */}
+            <img src={appConfig.logo.src} alt="" width={28} height={28} className="size-7" />
             <span className="whitespace-nowrap">{appConfig.productName}</span>
           </Link>
 
@@ -137,6 +140,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+
+      <IdentityOffBanner />
 
       <main
         id="main-content"

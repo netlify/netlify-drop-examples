@@ -1,7 +1,7 @@
 import type { UserSignupHandler } from '@netlify/functions'
 import { getAllowedSignupDomain } from '../../src/config/flags'
 import { appConfig } from '../../src/config/app'
-import { hasAnyUsers } from '../../src/auth/first-user'
+import { hasOtherConfirmedUser } from '../../src/auth/first-user'
 
 /**
  * Netlify Identity signup event hook. Assigns `appConfig.memberRole` to every
@@ -12,10 +12,12 @@ import { hasAnyUsers } from '../../src/auth/first-user'
  * optional.
  *
  * The very first successful signup gets `appConfig.adminRole` instead of
- * `appConfig.memberRole` (see `hasAnyUsers()`), so a non-technical person deploying
- * this template doesn't have to find Identity → Users → Roles in the Netlify
- * dashboard just to administer their own site. This has two windows worth
- * knowing about: two people signing up in the same instant could both read
+ * `appConfig.memberRole` (see `hasOtherConfirmedUser()`), so a non-technical
+ * person deploying this template doesn't have to find Identity → Users →
+ * Roles in the Netlify dashboard just to administer their own site. With
+ * email confirmation on, this hook runs when the person confirms, so the
+ * first person to confirm is the admin. This has two windows worth knowing
+ * about: two people signing up in the same instant could both read
  * zero existing users and both become admin, and — on open signups — whoever
  * signs up first (not necessarily the deployer) claims it. README > Roles
  * tells deployers to sign up immediately after deploying, before sharing the
@@ -42,7 +44,7 @@ const userSignup: UserSignupHandler = async (event) => {
 
   let alreadyHasUsers: boolean
   try {
-    alreadyHasUsers = await hasAnyUsers()
+    alreadyHasUsers = await hasOtherConfirmedUser(event.user.id)
   } catch {
     // If the admin API call fails for any reason, fail toward the safe
     // default (a regular member) rather than risk granting admin on a
