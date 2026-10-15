@@ -3,7 +3,10 @@ import { useRouteContext } from '@tanstack/react-router'
 import {
   getIdentityUsersUrl,
   isAuthEnabled,
+  isDataEncryptionKeySet,
   isDemoMode,
+  isDeployed,
+  isOfficialDemoSite,
   isSalesforceEnabled,
   isSnowflakeEnabled,
 } from '@/config/flags'
@@ -25,6 +28,10 @@ export type AppContextUser = {
 export type AppContext = {
   authEnabled: boolean
   demoMode: boolean
+  deployed: boolean
+  officialDemoSite: boolean
+  // Setup state for the Finish setting up checklist. Booleans only.
+  encryptionKeySet: boolean
   snowflakeEnabled: boolean
   salesforceEnabled: boolean
   identityUsersUrl: string | null
@@ -55,6 +62,9 @@ export const getAppContext = createServerFn({ method: 'GET' }).handler(async ():
   return {
     authEnabled,
     demoMode,
+    deployed: isDeployed(),
+    officialDemoSite: isOfficialDemoSite(),
+    encryptionKeySet: isDataEncryptionKeySet(),
     snowflakeEnabled: isSnowflakeEnabled(),
     salesforceEnabled: isSalesforceEnabled(),
     identityUsersUrl: authEnabled ? getIdentityUsersUrl() : null,

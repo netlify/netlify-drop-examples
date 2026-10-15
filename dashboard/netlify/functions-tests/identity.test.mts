@@ -28,8 +28,7 @@ describe('identity signup hook', () => {
     listUsers.mockReset()
   })
 
-  it('assigns DEFAULT_ROLE when ALLOWED_SIGNUP_DOMAIN is unset and a user already exists', async () => {
-    process.env.DEFAULT_ROLE = 'member'
+  it('assigns the viewer role when ALLOWED_SIGNUP_DOMAIN is unset and a user already exists', async () => {
     delete process.env.ALLOWED_SIGNUP_DOMAIN
     listUsers.mockResolvedValue([{ id: 'existing' }])
     const event = fakeEvent('someone@example.com')
@@ -37,11 +36,10 @@ describe('identity signup hook', () => {
     const result = await identity.userSignup(event as never)
 
     expect(event.deny).not.toHaveBeenCalled()
-    expect(result?.user.appMetadata?.roles).toEqual(['member'])
+    expect(result?.user.appMetadata?.roles).toEqual(['viewer'])
   })
 
   it('allows a signup whose email domain matches ALLOWED_SIGNUP_DOMAIN exactly (case-insensitive)', async () => {
-    process.env.DEFAULT_ROLE = 'member'
     process.env.ALLOWED_SIGNUP_DOMAIN = 'acme.com'
     listUsers.mockResolvedValue([{ id: 'existing' }])
     const event = fakeEvent('someone@Acme.com')
@@ -49,11 +47,10 @@ describe('identity signup hook', () => {
     const result = await identity.userSignup(event as never)
 
     expect(event.deny).not.toHaveBeenCalled()
-    expect(result?.user.appMetadata?.roles).toEqual(['member'])
+    expect(result?.user.appMetadata?.roles).toEqual(['viewer'])
   })
 
   it('denies a signup whose email domain does not match', async () => {
-    process.env.DEFAULT_ROLE = 'member'
     process.env.ALLOWED_SIGNUP_DOMAIN = 'acme.com'
     const event = fakeEvent('someone@other.com')
 
@@ -64,7 +61,6 @@ describe('identity signup hook', () => {
   })
 
   it('denies a subdomain, since matching is exact-domain only', async () => {
-    process.env.DEFAULT_ROLE = 'member'
     process.env.ALLOWED_SIGNUP_DOMAIN = 'acme.com'
     const event = fakeEvent('someone@sub.acme.com')
 
@@ -74,7 +70,6 @@ describe('identity signup hook', () => {
   })
 
   it('denies a signup with no email when a domain restriction is configured', async () => {
-    process.env.DEFAULT_ROLE = 'member'
     process.env.ALLOWED_SIGNUP_DOMAIN = 'acme.com'
     const event = fakeEvent(undefined)
 
@@ -84,7 +79,6 @@ describe('identity signup hook', () => {
   })
 
   it('assigns appConfig.adminRole to the first-ever signup', async () => {
-    process.env.DEFAULT_ROLE = 'member'
     delete process.env.ALLOWED_SIGNUP_DOMAIN
     listUsers.mockResolvedValue([])
     const event = fakeEvent('first@example.com')
@@ -94,14 +88,13 @@ describe('identity signup hook', () => {
     expect(result?.user.appMetadata?.roles).toEqual(['admin'])
   })
 
-  it('falls back to DEFAULT_ROLE if the admin API call fails', async () => {
-    process.env.DEFAULT_ROLE = 'member'
+  it('falls back to the viewer role if the admin API call fails', async () => {
     delete process.env.ALLOWED_SIGNUP_DOMAIN
     listUsers.mockRejectedValue(new Error('identity admin API unreachable'))
     const event = fakeEvent('someone@example.com')
 
     const result = await identity.userSignup(event as never)
 
-    expect(result?.user.appMetadata?.roles).toEqual(['member'])
+    expect(result?.user.appMetadata?.roles).toEqual(['viewer'])
   })
 })

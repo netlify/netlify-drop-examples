@@ -23,6 +23,27 @@ const officialDemoSiteNames = new Set(['app-pack-template'])
  * via `useAppContext()`.
  */
 
+/**
+ * True on a real Netlify deploy (production, previews, branch deploys), false
+ * on a laptop — including `netlify dev` when the repo is linked to a site,
+ * which sets `SITE_ID` too.
+ */
+export function isDeployed(): boolean {
+  if (process.env.NETLIFY_DEV === 'true') return false
+  return !!(process.env.SITE_ID ?? process.env.NETLIFY_SITE_ID ?? process.env.SITE_NAME)
+}
+
+/** True only on a canonical public demo project (see `officialDemoSiteIds`/`officialDemoSiteNames`). */
+export function isOfficialDemoSite(): boolean {
+  if (!isDeployed()) return false
+  const siteId = process.env.SITE_ID ?? process.env.NETLIFY_SITE_ID
+  const siteName = process.env.SITE_NAME
+  return (
+    (siteId ? officialDemoSiteIds.has(siteId) : false) ||
+    (siteName ? officialDemoSiteNames.has(siteName) : false)
+  )
+}
+
 export function isDemoMode(): boolean {
   // Demo mode is automatic:
   //
@@ -36,21 +57,7 @@ export function isDemoMode(): boolean {
   // set. @netlify/database can auto-provision a local Postgres database (and
   // set NETLIFY_DB_URL) in dev merely because the package is a dependency,
   // before you've ever applied a single migration.
-  if (process.env.NETLIFY_DEV === 'true') {
-    return true
-  }
-
-  const siteId = process.env.SITE_ID ?? process.env.NETLIFY_SITE_ID
-  const siteName = process.env.SITE_NAME
-
-  if (!siteId && !siteName) {
-    return true
-  }
-
-  return (
-    (siteId ? officialDemoSiteIds.has(siteId) : false) ||
-    (siteName ? officialDemoSiteNames.has(siteName) : false)
-  )
+  return !isDeployed() || isOfficialDemoSite()
 }
 
 export function isAuthEnabled(): boolean {
@@ -66,30 +73,11 @@ export function isAuthEnabled(): boolean {
 }
 
 /**
- * The role assigned to every new user at signup (see
- * `netlify/functions/identity.mts`). Unlike `isDemoMode`/`isAuthEnabled`,
- * this has no default: a vertical template MUST set `DEFAULT_ROLE` before
- * enabling Identity signups, or every signup attempt fails loudly instead of
- * silently assigning a made-up role name.
- */
-export function getDefaultRole(): string {
-  const value = process.env.DEFAULT_ROLE
-  if (!value) {
-    throw new Error(
-      'DEFAULT_ROLE is not set. Set it to the role your vertical assigns new signups ' +
-        '(e.g. "member") as a site environment variable before enabling Identity signups. See README > Roles.',
-    )
-  }
-  return value
-}
-
-/**
  * The email domain new signups must match (see
  * `netlify/functions/identity.mts`), or `undefined` for no restriction.
- * Unlike `getDefaultRole`, this is optional, not fail-loud: the signup hook
- * has no way to tell whether Identity's own "open signups" setting is even
- * on, so it can't force a vertical to configure this the way it forces
- * `DEFAULT_ROLE`. Unset (the default) means unrestricted — correct for an
+ * Optional, not fail-loud: the signup hook has no way to tell whether
+ * Identity's own "open signups" setting is even on, so it can't force a
+ * vertical to configure this. Unset (the default) means unrestricted — correct for an
  * invite-only setup, where every signup already comes from a trusted
  * invite. Matching is exact-domain only (`acme.com`, not `*.acme.com`) —
  * comparison is done against the literal string after `@`, so a
@@ -150,6 +138,19 @@ export function getDataEncryptionKey(): Buffer {
     throw new Error('DATA_ENCRYPTION_KEY must be 32 bytes, base64-encoded (`openssl rand -base64 32`).')
   }
   return key
+}
+
+/**
+ * Whether `DATA_ENCRYPTION_KEY` is set to a valid key. For the Finish setting
+ * up checklist only — never exposes the key itself.
+ */
+export function isDataEncryptionKeySet(): boolean {
+  try {
+    getDataEncryptionKey()
+    return true
+  } catch {
+    return false
+  }
 }
 
 export type SnowflakeConfig = {

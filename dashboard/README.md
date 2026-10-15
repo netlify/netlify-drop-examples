@@ -105,17 +105,57 @@ fail.
 3. Enable Identity in the Netlify dashboard, then redeploy. This is
    required, not optional: the data is Tier 2, so nothing is served without
    it. After that, visitors are sent to `/login` until they sign in.
-4. Set `DEFAULT_ROLE` on the environment variables page before enabling
-   signups: `https://app.netlify.com/projects/{sitename}/configuration/env`.
-   Then sign up yourself at `/login` right away, **before** sharing the URL
+4. Sign up yourself at `/login` right away, **before** sharing the URL
    with anyone else — the first person to sign up automatically becomes the
-   site admin (see "Roles" below), so signing up first is how you claim that
-   account. After that, invite everyone else from the Identity tab, or leave
-   public signups on if that's what your site needs.
-5. Optional setup lives on that same environment variables page:
+   site admin and everyone after gets `viewer` (see "Roles" below), so
+   signing up first is how you claim that account. After that, invite
+   everyone else from the Identity tab, or leave public signups on if that's
+   what your site needs.
+5. Optional setup lives on the environment variables page,
+   `https://app.netlify.com/projects/{sitename}/configuration/env`:
    `ALLOWED_SIGNUP_DOMAIN` for signup restrictions,
    `PURGE_ENABLED`/`RECORD_RETENTION_DAYS` for permanent deletion of
    soft-deleted records, and notification keys for Slack or email.
+
+## Go live checklist
+
+A "Finish setting up" card floats in the corner of the app for **admins**,
+walking through the steps above. It is a UX nudge, not access control: it
+links to dashboard pages and exposes no data (setup state reaches the client
+as booleans only). It directs (one action per row); the template page
+explains and the About page orients.
+
+- **Who sees it.** Admins, including the stand-in demo user in local dev.
+  Also anyone on a deployed copy before Identity is on — nobody can be admin
+  yet and the dashboard fails closed, so it's the only way the deployer sees
+  what's left. Everyone else sees nothing.
+- **Hides itself** once every *required* row is done. The X dismisses it for
+  good (stored in `localStorage`); clear site storage to bring it back.
+- **Manual rows** are ones the app can't detect. The admin ticks "I've done
+  this" (also stored in `localStorage`), and they never block the card from
+  hiding.
+- **On the official demo site** the "Make this app yours" badge shows instead.
+
+Each row has a "Learn more" link to a section of the template page
+(`appConfig.templatePageUrl`, anchor `#before-you-share` or
+`#connect-your-data`).
+
+1. **Check who can open your app** (manual, optional) — project visibility.
+2. **Set the data encryption key** (required) — done when a valid
+   `DATA_ENCRYPTION_KEY` is set.
+3. **Turn on app sign-in (Netlify Identity)** (required) — done when Identity
+   is on. Also tells the deployer to sign up first: the first signup becomes
+   the admin automatically, so there's no separate step for it.
+4. **Choose who can sign up** (manual, optional) — `ALLOWED_SIGNUP_DOMAIN`
+   and/or invite-only signups.
+5. **Connect your data** (optional) — Snowflake and Salesforce variables in
+   one row; done when either source is fully configured. CSV upload on
+   `/data` works without either.
+
+To remove it, delete `src/components/setup-prompt.tsx`,
+`src/components/go-live-checklist.tsx` and
+`src/components/netlify-deploy-badge.tsx`, plus the `<SetupPrompt />` line in
+`src/components/app-shell.tsx`.
 
 ## Base template guarantees
 
@@ -152,7 +192,6 @@ vertical — full detail is in the linked section, this is just orientation.
 | -------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `NETLIFY_DB_URL`                                         | —       | Set automatically by `@netlify/database` / `netlify database init`. Don't set by hand.                                                                       |
 | `AUTH_DEV_USER`                                          | —       | Local-dev-only fake session, e.g. `{"email":"you@example.com","roles":["admin"]}`. Turns auth on only when running under `netlify dev` (`NETLIFY_DEV=true`). |
-| `DEFAULT_ROLE`                                           | —       | Required once signups are enabled — the role assigned to new users at signup. See "Roles" below. No default; signups fail loudly until this is set.          |
 | `ALLOWED_SIGNUP_DOMAIN`                                  | —       | Optional — restricts signups to one exact email domain (no subdomains). Unset means no restriction. See "Roles" below.                                       |
 | `DATA_ENCRYPTION_KEY`                                    | —       | **Required outside demo mode** (fails closed). 32 bytes, base64 (`openssl rand -base64 32`). Encrypts owner/amount/ARR columns and raw uploads. **Secret.** See Data classification (Tier 2).                |
 | `SNOWFLAKE_ACCOUNT`, `_USER`, `_PRIVATE_KEY`, `_WAREHOUSE`, `_ROLE`, `_DATABASE`, `_SCHEMA` | — | Optional. Snowflake refresh turns on only when **all seven** are set. `SNOWFLAKE_PRIVATE_KEY` is a PKCS#8 PEM (literal `\n` allowed) and a **secret**. See Snowflake below. |
@@ -183,16 +222,12 @@ The app ships with auth **off**. To turn it on:
    [Netlify's Identity setup guide](https://docs.netlify.com/manage/security/secure-access-to-sites/identity/get-started/#enable-identity).
 2. Redeploy the site. The app detects the project's Identity configuration
    automatically; there is no auth env var to set.
-3. Set `DEFAULT_ROLE` (e.g. `member`) as a site environment variable —
-   `netlify/functions/identity.mts` assigns it to every new signup's
-   `app_metadata.roles`. Signups fail loudly until this is set.
-4. Sign up yourself at `/login` before inviting anyone else — the very first
-   signup automatically becomes the admin instead of getting `DEFAULT_ROLE`
-   (see "Roles" below). After that, invite users from the Identity tab, or
-   let them sign up directly if signups are enabled in your Identity
-   settings. Promote specific users beyond the default role from the
-   Identity tab (`roles` land in `app_metadata.roles`, never
-   `user_metadata` — see "Roles" below).
+3. Sign up yourself at `/login` before inviting anyone else — the very first
+   signup automatically becomes the admin instead of getting `viewer` (see
+   "Roles" below). After that, invite users from the Identity tab, or let
+   them sign up directly if signups are enabled in your Identity settings.
+   Promote specific users beyond `viewer` from the Identity tab (`roles` land
+   in `app_metadata.roles`, never `user_metadata` — see "Roles" below).
 
 With auth on:
 
@@ -203,7 +238,7 @@ With auth on:
   Recovery finishes with `updateUser({ password })`; invites finish with
   `acceptInvite(token, password)`. See `src/auth/client.tsx`'s
   `useAuthCallback`/`ResetPasswordForm` for how the two flows are told apart.
-- Every new signup gets `DEFAULT_ROLE` in `app_metadata.roles` automatically,
+- Every new signup gets `viewer` in `app_metadata.roles` automatically,
   except the very first, which becomes the admin (see "Roles" below) — no
   manual dashboard step required for the common case.
 - Every dashboard route, `/data` and `/admin` redirects anonymous visitors to
@@ -252,21 +287,21 @@ Identity dashboard's "Roles" field writes, and what `netlify.toml`'s
 **Assigning roles:**
 
 - **At signup**: `netlify/functions/identity.mts` is an Identity signup
-  event hook that assigns `DEFAULT_ROLE` (required, see "Environment
-  variables" above) to every new user's `app_metadata.roles` automatically.
+  event hook that assigns `appConfig.memberRole` (`'viewer'`, nothing to
+  configure) to every new user's `app_metadata.roles` automatically.
   Identity event hooks only fire against a real deploy with Identity
   enabled — not under `netlify dev`.
 - **The first signup becomes the admin**: the same hook checks
   `hasAnyUsers()` (`src/auth/first-user.ts`, backed by the Identity admin
   API's `listUsers()`) and assigns `appConfig.adminRole` instead of
-  `DEFAULT_ROLE` when nobody has signed up yet. This exists so a
+  `appConfig.memberRole` when nobody has signed up yet. This exists so a
   non-technical person deploying the template can administer their own site
   without ever opening the Identity dashboard. It has a race window (two
   people signing up in the same instant could both become admin) and, on
   open signups, a land-grab window (whoever signs up first — not necessarily
   the deployer — claims it) — see "After deploying to your account" above
   for closing the second one by signing up immediately. If the `listUsers()`
-  check itself fails, the hook falls back to `DEFAULT_ROLE` rather than risk
+  check itself fails, the hook falls back to `viewer` rather than risk
   granting admin on an unconfirmed read. `/login`'s signup form shows a
   "you'll be the site admin" notice while this condition holds (see
   `src/server/first-user.ts` / `src/auth/client.tsx`).
@@ -274,7 +309,7 @@ Identity dashboard's "Roles" field writes, and what `netlify.toml`'s
   `ALLOWED_SIGNUP_DOMAIN` — set it to one exact email domain (e.g.
   `acme.com`) and any signup whose email domain doesn't match exactly (no
   subdomains) is denied via `event.deny()` before a role is ever assigned.
-  Unlike `DEFAULT_ROLE`, this is optional rather than fail-loud: the hook
+  This is optional rather than fail-loud: the hook
   has no way to know whether Identity's "open signups" setting is even on,
   so it can't force every deployment to configure it. Unset (the default)
   means no restriction — correct for invite-only setups, where every
@@ -304,11 +339,16 @@ Both helpers have zero knowledge of what role strings are valid — only the
 `allowedRoles` array you pass in varies per call site. This is pure
 boilerplate that shouldn't need to change per vertical.
 
-**The one hardcoded role name in the base template** is
-`appConfig.adminRole` (`src/config/app.ts`, defaults to `'admin'`), which
-gates the built-in demo `/admin` section (audit log, usage events) and its
-nav links. Rename it, or remove the admin section entirely, when forking
-for a vertical with its own taxonomy.
+**The two hardcoded role names in the base template** are
+`appConfig.adminRole` (`src/config/app.ts`, defaults to `'admin'`) and
+`appConfig.memberRole` (`'viewer'` here, the role every signup after the
+first gets). `adminRole` gates the built-in demo `/admin` section (audit log,
+usage events) and its account-menu links. Rename them, or remove the admin
+section entirely, when forking for a vertical with its own taxonomy.
+
+A role set at signup is in place for the user's first sign-in. Roles ride in
+the JWT, so a later change from the Identity tab takes effect on the user's
+next login or token refresh, not immediately.
 
 `appConfig.uploadAllowedRoles` (`src/config/app.ts`, defaults to `[]`) is a
 second, separate role list gating `/api/upload` and `/api/files/:key` (see
@@ -521,7 +561,7 @@ requirement lives:
 
 - [ ] `DATA_ENCRYPTION_KEY` set as a secret env var (back it up — losing it makes stored data unreadable).
 - [ ] Netlify Identity enabled; signups **invite-only** or restricted with `ALLOWED_SIGNUP_DOMAIN`.
-- [ ] `DEFAULT_ROLE=viewer` (recommended). Promote builders to `editor` / `admin` in the Netlify Identity dashboard (app metadata roles) — there is no in-app user management; admins get a "Manage users" link to it.
+- [ ] Sign up first so you become the admin; everyone after gets `viewer` automatically. Promote builders to `editor` / `admin` in the Netlify Identity dashboard (app metadata roles) — there is no in-app user management; admins get a "Manage users" link to it in the account menu (under their email).
 - [ ] Project visibility set to private where available; no public links to deploy previews of a deployment holding real data (previews of the demo site use synthetic data only).
 - [ ] The DB role check above passes.
 - [ ] Decide whether `PURGE_ENABLED` / `RECORD_RETENTION_DAYS` apply to you.
@@ -535,7 +575,8 @@ numbers shown.
 `appConfig.roles` defines `viewer`, `editor`, `admin` and `dataEditorRoles =
 ['editor', 'admin']` (`src/config/app.ts`). **Viewers** see the dashboard;
 **editors** also get `/data` (upload, Snowflake refresh, raw downloads);
-**admins** also get the audit log and usage events. A signed-in user with none
+**admins** also get the audit log and usage events (in the account menu under
+their email) and the "About this app" page. A signed-in user with none
 of these roles sees nothing. Roles live in `app_metadata.roles` (see Roles
 above).
 

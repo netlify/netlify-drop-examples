@@ -8,9 +8,8 @@ apps. Read this before making changes.
   Data lives in memory (`src/data/*.ts`) and resets on cold start. Deployed
   forks switch to the real database path automatically based on Netlify's
   read-only site metadata (`SITE_ID`/`SITE_NAME`).
-- **One flag controls each non-demo toggle**: `DEFAULT_ROLE` (role assigned
-  at signup, required once signups are enabled), `ALLOWED_SIGNUP_DOMAIN`
-  (optional — restricts signups to one exact email domain, no subdomains),
+- **One flag controls each non-demo toggle**: `ALLOWED_SIGNUP_DOMAIN`
+  (optional — restricts signups to one exact email domain, no subdomains)
   and `PURGE_ENABLED`/`RECORD_RETENTION_DAYS` (hard purge of soft-deleted
   dataset batches — off by default, `RECORD_RETENTION_DAYS` required once
   `PURGE_ENABLED=true`). Auth is detected from Netlify Identity being enabled
