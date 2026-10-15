@@ -8,6 +8,14 @@
 export const appConfig = {
   productName: 'App Pack',
   tagline: 'A starter you can actually ship.',
+  // Completes "This is a starting point for ..." on the About page (demo site
+  // only). Describe what the pack does for the team, lowercase, no full stop.
+  packDescription:
+    'tracking records for an internal team, with a dashboard, sign-in, role-based permissions and an audit log',
+  // This pack's page on netlify.com/templates. The About page links to it and
+  // every Finish setting up row's "Learn more" points at one of its anchors
+  // (#before-you-share, #works-with-[service]). To confirm: the live slug.
+  templatePageUrl: 'https://www.netlify.com/templates/app-pack-template',
   logo: {
     // Path relative to /public. Swap the file and keep the same path, or
     // change the path here.
@@ -30,24 +38,25 @@ export const appConfig = {
     primary: [
       { label: 'Dashboard', to: '/' as const },
       { label: 'Records', to: '/records' as const },
-      { label: 'About', to: '/about' as const },
     ],
+    // Shown in the account menu (under the user's email) for `adminRole` only.
     admin: [
       { label: 'Audit log', to: '/admin/audit' as const },
       { label: 'Usage events', to: '/admin/events' as const },
     ],
   },
-  // The role required to see the built-in demo admin section (audit log,
-  // usage events) and its nav links above. This is the only hardcoded role
+  // The role required to see the built-in demo admin section (audit
+  // log, usage events) and its account-menu links above. This is the only hardcoded role
   // name in the base template — change it to whatever your vertical's
   // taxonomy calls its top role, or remove the admin section entirely. See
   // README > Roles for the generic RBAC mechanism this plugs into.
   adminRole: 'admin',
-  // The role every signup gets, except the very first (which becomes
-  // `adminRole`). The `DEFAULT_ROLE` env var overrides it, so a vertical with
-  // its own taxonomy can set one without touching code — see
-  // `getDefaultRole()` in `src/config/flags.ts`.
-  defaultRole: 'member',
+  // The role every signup after the first gets in `app_metadata.roles` (see
+  // `netlify/functions/identity.mts`). A fixed name, not an env var: there's
+  // nothing to configure before enabling signups. Promote people beyond it
+  // from the Identity tab. Rename it if your vertical calls its base role
+  // something else.
+  memberRole: 'member',
   // The Netlify site ID of the canonical public demo. That one deploy runs on
   // sample data and shows a "Make this app yours" badge (see
   // `src/components/setup-prompt.tsx`); every other deploy uses the real

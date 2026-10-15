@@ -13,9 +13,8 @@ apps. Read this before making changes.
   Netlify's `SITE_ID` and `appConfig.officialDemoSiteId`). Do not add a
   `DEMO_MODE` env var or infer it from `NETLIFY_DB_URL`. Tests rely on
   `SITE_ID` being unset to stay in-memory.
-- **One flag controls each non-demo toggle**: `DEFAULT_ROLE` (role assigned
-  at signup; optional, defaults to `appConfig.defaultRole`), `ALLOWED_SIGNUP_DOMAIN`
-  (optional — restricts signups to one exact email domain, no subdomains),
+- **One flag controls each non-demo toggle**: `ALLOWED_SIGNUP_DOMAIN`
+  (optional — restricts signups to one exact email domain, no subdomains)
   and `PURGE_ENABLED`/`RECORD_RETENTION_DAYS` (hard purge of soft-deleted
   records — off by default, `RECORD_RETENTION_DAYS` required once
   `PURGE_ENABLED=true`). Auth is detected by asking the platform whether Identity is on
@@ -30,6 +29,8 @@ apps. Read this before making changes.
 - **Branding lives in one file**: `src/config/app.ts`. If you're asked to
   rebrand the app, that's the only file that should change (plus swapping
   `/public/logo.svg`).
+  The same file holds `packDescription` and `templatePageUrl`, which feed the
+  About page and the checklist's "Learn more" links.
 - **Data layer pattern**: `src/data/<entity>.ts` has `if (isDemoMode())`
   branches inline — no interface + two implementations. To add an entity,
   copy `src/data/records.ts`'s shape.

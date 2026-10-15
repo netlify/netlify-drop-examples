@@ -27,7 +27,7 @@ export type AppContext = {
 // Stand-in user whenever auth is off — local dev, the demo site, AND a
 // deployed fork that hasn't enabled Identity yet (which is on the real
 // database, so this can't be keyed on demo mode). Cosmetic only: it makes
-// the admin nav and the setup checklist render. `requireRole()` already
+// the admin menu and the setup checklist render. `requireRole()` already
 // no-ops when auth is off, so this grants nothing.
 const DEMO_SESSION_USER: AppContextUser = {
   id: 'demo-user',

@@ -118,19 +118,11 @@ export async function isAuthEnabled(): Promise<boolean> {
 }
 
 /**
- * The role assigned to every new user at signup (see
- * `netlify/functions/identity.mts`), other than the very first, who becomes
- * the admin. Falls back to `appConfig.defaultRole` so a fresh deploy needs no
- * configuration; set `DEFAULT_ROLE` to use a different role name.
- */
-export function getDefaultRole(): string {
-  return process.env.DEFAULT_ROLE?.trim() || appConfig.defaultRole
-}
-
-/**
  * The email domain new signups must match (see
  * `netlify/functions/identity.mts`), or `undefined` for no restriction.
- * Unset (the default) means unrestricted — correct for an
+ * Optional, not fail-loud: the signup hook has no way to tell whether
+ * Identity's own "open signups" setting is even on, so it can't force a
+ * vertical to configure this. Unset (the default) means unrestricted — correct for an
  * invite-only setup, where every signup already comes from a trusted
  * invite. Matching is exact-domain only (`acme.com`, not `*.acme.com`) —
  * comparison is done against the literal string after `@`, so a

@@ -55,19 +55,9 @@ export function useAuthCallback(authEnabled: boolean) {
   }, [authEnabled])
 }
 
-export function LogoutButton() {
-  return (
-    <Button
-      variant="ghost"
-      size="small"
-      onClick={async () => {
-        await logout()
-        window.location.href = '/login'
-      }}
-    >
-      Log out
-    </Button>
-  )
+export async function logoutAndRedirect() {
+  await logout()
+  window.location.href = '/login'
 }
 
 const PROVIDER_LABELS: Record<AuthProvider, string> = {
