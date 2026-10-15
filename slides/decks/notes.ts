@@ -6,7 +6,7 @@ import { makeNoteKey } from '../edits-core'
 import { canEdit, deckSlug, identityEnabled } from './edits'
 
 // Private slide notes, stored per deck in Netlify Blobs next to the text edits
-// (netlify/functions/notes.mts). Only logged-in editors can read or write them.
+// (netlify/functions/notes.mts). Only signed-in people can read or write them.
 // A note is keyed by slide number plus a hash of the slide's title (or, for slides
 // built from raw HTML with no heading, the start of its text), so notes follow a
 // slide when slides are added or reordered.
@@ -18,7 +18,7 @@ export const notesOpen = useLocalStorage('deck-notes-open', false)
 export const notesSaving = ref(false)
 export const notesError = ref('')
 
-/** The pane is only offered to logged-in editors on decks with editing turned on. */
+/** The pane is only offered to signed-in people. */
 export const notesAvailable = computed(() => identityEnabled.value && canEdit.value)
 
 /** What identifies a slide besides its number: its title, else its first words of text. */

@@ -8,6 +8,9 @@ const escapeHtml = text => text.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&
 
 const decks = listDecks()
 
+// The template page for this pack, which About links to. One value; update it here.
+const TEMPLATE_URL = 'https://netlify.com/templates/slides'
+
 const sections = `
     <ul class="decks">${decks.map(deck => `
       <li>
@@ -22,6 +25,16 @@ const sections = `
         </a>
       </li>`).join('')}
     </ul>`
+
+// About this app, in the App Pack content system's wording: it orients and links to the
+// template page, and never holds setup steps or settings.
+const icon = (inner, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`
+const blurb = `
+    <section class="blurb" aria-labelledby="blurb-title">
+      <h2 id="blurb-title">About this app</h2>
+      <p>This is Slides, built from a template. Your edits and notes are saved in Netlify Blobs.</p>
+      <a class="blurb-link" href="${TEMPLATE_URL}" target="_blank" rel="noreferrer">See everything you can configure${icon('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>')}</a>
+    </section>`
 
 // Thumbnails are live, scaled-down copies of each deck's first slide, so they never
 // go stale and the build needs no browser. They are hidden (and so never loaded) in
@@ -57,6 +70,13 @@ const html = `<!doctype html>
     .thumb { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--stage); border-bottom: 1px solid var(--rule); }
     .thumb iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 720px; border: 0; transform-origin: 0 0; transform: scale(var(--s, .25)); pointer-events: none; }
 
+    .blurb { display: grid; justify-items: start; gap: .5rem; max-width: 40rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--rule); }
+    .blurb h2 { margin: 0; color: var(--ink); font-size: 1.25rem; letter-spacing: -.01em; }
+    .blurb p { margin: 0; color: var(--muted); }
+    a.blurb-link { display: inline-flex; align-items: center; gap: .4rem; border: 0; border-radius: 4px; background: none; color: var(--accent); font-weight: 600; }
+    a.blurb-link:hover { text-decoration: underline; }
+    .blurb-link svg { width: 1rem; height: 1rem; }
+
     /* Grid view (default) */
     [data-view="grid"] .decks { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
 
@@ -82,7 +102,7 @@ const html = `<!doctype html>
           <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2.4" rx="1.2"/><rect x="1" y="6.8" width="14" height="2.4" rx="1.2"/><rect x="1" y="11.6" width="14" height="2.4" rx="1.2"/></svg>
         </button>
       </div>
-    </header>${sections}
+    </header>${sections}${blurb}
   </main>
   <script>
     const main = document.querySelector('main')

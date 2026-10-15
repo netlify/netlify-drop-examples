@@ -40,6 +40,11 @@ each deck's first slide, or as a dense list that also shows each deck's `info` l
 remembered). Thumbnails are live, scaled-down copies of the first slide, so they
 never go stale and the build needs no browser. The list view doesn't load them.
 
+Below the decks, the home page has an "About this app" blurb. It orients and links to
+the pack's template page ("See everything you can configure"), and never holds setup
+steps or settings. Its wording follows the App Pack content system. The template page
+URL is `TEMPLATE_URL` in `scripts/build-index.mjs`.
+
 To add a deck:
 
 1. Create `decks/my-deck.md`. Use lowercase letters, numbers and dashes in the
@@ -101,12 +106,12 @@ that slide.
 - On screens narrower than 768px the panel becomes a drawer from the bottom.
   Tap the slide-number pill to open it; Slidev's own nav bar is hidden there.
   The edit buttons are hidden with it, so text editing needs a wider screen.
-- Notes: signed-in editors see a notebook icon in the panel footer (in the
+- Notes: signed-in people see a notebook icon in the panel footer (in the
   drawer header on small screens). It opens a notes pane along the bottom of the
   page, and the slide shrinks to fit. Type a note for the slide and click away or
   press Cmd/Ctrl+Enter to save; Esc discards your changes. Notes need
-  `editing: true` and Netlify Identity, are stored per deck in the same Netlify
-  Blobs store as text edits, and are readable only by signed-in editors. A note
+  Netlify Identity, are stored per deck in the same Netlify
+  Blobs store as text edits, and are readable only by signed-in people. A note
   is tied to the slide's number and title (or its opening text when it has no
   heading). Moving a slide keeps its note; renaming it detaches the note, so the
   pane shows it as an earlier note and saving re-attaches it.
@@ -124,7 +129,7 @@ so there is no presenter view or speaker-notes screen.
 
 ## Edit text on a slide
 
-Signed-in editors can change the text on any slide from the browser, and the
+Anyone signed in can change the text on any slide from the browser, and the
 changes stay for everyone who opens the deck.
 
 - Click the pencil in the nav bar (it appears when Netlify Identity is on).
@@ -142,18 +147,28 @@ changes stay for everyone who opens the deck.
 
 ### Set it up
 
-Editing is off in this demo deck (`editing: false` in the deck's
-headmatter): no pencil, no Identity calls, no `/api/edits` requests. Set
-`editing: true` to turn it on, then:
+There is nothing to set in the decks. Editing and notes switch on by themselves once
+Netlify Identity is enabled for the site, and stay out of the way (no pencil, no
+sign-in) until then.
 
 1. In the Netlify dashboard, open Identity for the project and enable it.
-2. Under Registration, choose Invite only.
-3. Invite the people who should edit. Anyone who signs up from an invite becomes
-   an editor (`netlify/functions/identity.mts`).
+2. Under Registration, choose Invite only. Anyone who can sign in can edit, so this is
+   what decides who gets in.
+3. Invite the people who should edit.
+
+Optionally, limit sign-in to some email domains. Set the `ALLOWED_EMAIL_DOMAINS`
+environment variable in the Netlify dashboard (Project configuration → Environment
+variables) to a comma-separated list, such as `example.com,example.org`, and deploy
+again. People with any other email domain are refused at login (and at sign-up), and
+the edits and notes functions check it on every request, so an existing session from
+another domain stops working too. Domains match exactly (`example.com` does not allow
+`sub.example.com`), case doesn't matter, and leaving it unset or empty means no
+restriction. The hooks live in `netlify/functions/identity.mts` and the check in
+`netlify/lib/domains.mts`. Invite-only registration is still the better first gate:
+this is a second one for teams that share an email domain.
 
 Identity doesn't run under `netlify dev`. Test sign-in on a deploy or a Deploy
-Preview. With `editing: true` but Identity not enabled, the deck works as before and
-the pencil is hidden.
+Preview. With Identity not enabled, the deck works as before and the pencil is hidden.
 
 ## Dark mode
 

@@ -13,8 +13,6 @@ mdc: true
 presenter: false
 # Turns off Slidev's right-click menu (the browser's own menu still opens).
 contextMenu: false
-# Text editing. Set to false for a demo with no editing and no Netlify Identity calls.
-editing: true
 fonts:
   sans: Inter
   mono: IBM Plex Mono

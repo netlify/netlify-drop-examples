@@ -1,12 +1,12 @@
 // Shared by the edits and notes functions: one Blobs store, per-deck keys,
-// editor-only writes and compare-and-set saves.
+// signed-in-only writes and compare-and-set saves.
 import type { Context } from '@netlify/functions'
 import type { EditChange, EditMap } from '../../edits-core.ts'
 import { getStore } from '@netlify/blobs'
 import { getUser } from '@netlify/identity'
 import { applyChange } from '../../edits-core.ts'
+import { isAllowedEmail } from './domains.mts'
 
-const EDIT_ROLES = ['editor', 'admin']
 const DECK_RE = /^[a-z0-9][a-z0-9-]{0,63}$/
 const MAX_ATTEMPTS = 4
 
@@ -28,13 +28,15 @@ export function deckOf(req: Request): string | null {
   return DECK_RE.test(deck) || deck === 'default' ? deck : null
 }
 
-/** A response if the caller isn't a logged-in editor, otherwise null. */
-export async function rejectNonEditor(): Promise<Response | null> {
+/** A response if the caller isn't logged in, otherwise null. Any signed-in user may edit; Identity's
+ *  Registration setting (invite only) decides who can sign in, and ALLOWED_EMAIL_DOMAINS, if set,
+ *  narrows that to some email domains. */
+export async function rejectSignedOut(): Promise<Response | null> {
   const user = await getUser()
   if (!user)
     return json({ error: 'Log in to edit' }, 401)
-  if (!user.roles?.some(role => EDIT_ROLES.includes(role)))
-    return json({ error: 'Your account cannot edit' }, 403)
+  if (!isAllowedEmail(user.email))
+    return json({ error: "Your email domain isn't allowed to edit this site" }, 403)
   return null
 }
 
@@ -46,7 +48,7 @@ export function rejectCrossOrigin(req: Request): Response | null {
   return null
 }
 
-/** Compare-and-set so two editors saving at once don't silently drop each other.
+/** Compare-and-set so two people saving at once don't silently drop each other.
  *  Returns the saved map, or null if every attempt lost the race. */
 export async function saveChange(store: ReturnType<typeof getStore>, key: string, change: EditChange): Promise<EditMap | null> {
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {

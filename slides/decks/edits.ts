@@ -1,6 +1,5 @@
 import type { EditMap } from '../edits-core'
 import { getSettings, getUser, handleAuthCallback, login, logout } from '@netlify/identity'
-import { configs } from '@slidev/client/env.ts'
 import { lockShortcuts } from '@slidev/client/state/index.ts'
 import { ref } from 'vue'
 import { makeKey } from '../edits-core'
@@ -12,11 +11,11 @@ import { makeKey } from '../edits-core'
 export const deckSlug = import.meta.env.BASE_URL.replace(/^\/|\/$/g, '') || 'default'
 const editsUrl = `/api/edits?deck=${encodeURIComponent(deckSlug)}`
 
-const EDIT_ROLES = ['editor', 'admin']
 const SKIP = 'pre, code, iframe, script, style, textarea, [contenteditable="false"]'
 
 export const edits = ref<EditMap>({})
 export const identityEnabled = ref(false)
+/** Anyone signed in can edit. */
 export const canEdit = ref(false)
 export const userEmail = ref('')
 export const editing = ref(false)
@@ -95,7 +94,7 @@ async function refreshUser() {
   try {
     const user = await getUser()
     userEmail.value = user?.email ?? ''
-    canEdit.value = !!user?.roles?.some(role => EDIT_ROLES.includes(role))
+    canEdit.value = !!user
   }
   catch {
     userEmail.value = ''
@@ -104,8 +103,7 @@ async function refreshUser() {
 }
 
 export async function initEdits(options: { identity?: boolean } = {}) {
-  // Demo mode (`editing: false` in the slides.md headmatter): no edits, no Identity.
-  if (started || (configs as Record<string, unknown>).editing !== true)
+  if (started)
     return
   started = true
 
