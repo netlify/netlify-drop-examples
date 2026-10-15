@@ -4,6 +4,7 @@ import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
 import { ModeToggle } from '@/components/mode-toggle'
 import { SetupPrompt } from '@/components/setup-prompt'
+import { IdentityOffBanner } from '@/components/identity-off-banner'
 import { UserMenu } from '@/components/user-menu'
 import { Button } from 'app-packs-ui'
 import { cn } from '@/lib/utils'
@@ -59,6 +60,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+
+      <IdentityOffBanner />
 
       <main className={cn('mx-auto w-full max-w-6xl flex-1 px-4 py-8 pb-24')}>{children}</main>
       <SetupPrompt />

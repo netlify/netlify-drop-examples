@@ -3,6 +3,7 @@ import { Check, ChevronRight, X } from 'lucide-react'
 import { Button } from 'app-packs-ui'
 import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
+import { IDENTITY_SETTINGS_URL, VISIBILITY_SETTINGS_URL } from '@/lib/dashboard-links'
 import {
   Dialog,
   DialogContent,
@@ -15,8 +16,6 @@ import { cn } from '@/lib/utils'
 
 const DISMISS_KEY = 'go-live-checklist-dismissed'
 const MANUAL_KEY = 'go-live-checklist-manual'
-const IDENTITY_SETTINGS_URL = 'https://app.netlify.com/projects/~/identity'
-const VISIBILITY_SETTINGS_URL = 'https://app.netlify.com/projects/~/configuration/general#project-visibility'
 
 /**
  * One row of the Finish setting up card. Fields mirror the App Pack content
