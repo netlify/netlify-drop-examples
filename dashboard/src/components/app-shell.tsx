@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ExternalLink } from 'lucide-react'
 import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
 import { ModeToggle } from '@/components/mode-toggle'
-import { LogoutButton } from '@/auth/client'
-import { Badge } from 'app-packs-ui'
+import { SetupPrompt } from '@/components/setup-prompt'
+import { UserMenu } from '@/components/user-menu'
+import { Button } from 'app-packs-ui'
 import { cn } from '@/lib/utils'
 
 /**
@@ -17,7 +17,9 @@ import { cn } from '@/lib/utils'
 const keepRange = ((prev: { from?: string; to?: string }) => ({ from: prev.from, to: prev.to })) as never
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { authEnabled, demoMode, identityUsersUrl, user } = useAppContext()
+  const { authEnabled, demoMode, user } = useAppContext()
+  // The demo site shows About to everyone; a deployed copy only to its admins.
+  const showAbout = demoMode || !!user?.roles?.includes(appConfig.adminRole)
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -52,43 +54,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </Link>
                 ))
               : null}
-            {user?.roles?.includes(appConfig.adminRole)
-              ? appConfig.nav.admin.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className="hover:text-foreground [&.active]:font-medium [&.active]:text-foreground"
-                    activeProps={{ className: 'active' }}
-                  >
-                    {item.label}
-                  </Link>
-                ))
-              : null}
-            {user?.roles?.includes(appConfig.adminRole) && identityUsersUrl ? (
-              <a
-                href={identityUsersUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 hover:text-foreground"
-              >
-                Manage users
-                <ExternalLink className="size-3" aria-hidden="true" />
-              </a>
-            ) : null}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3">
-            {demoMode ? (
-              <Badge variant="secondary" className="hidden sm:inline-flex">
-                Sample data
-              </Badge>
+          <div className="ml-auto flex items-center gap-1 sm:gap-3">
+            {showAbout ? (
+              <Button asChild variant="outline" size="small">
+                <Link to="/about" search={keepRange}>
+                  <span className="sm:hidden">About</span>
+                  <span className="hidden sm:inline">About this app</span>
+                </Link>
+              </Button>
             ) : null}
             <ModeToggle />
             {user ? (
-              <div className="flex items-center gap-2">
-                <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
-                {authEnabled ? <LogoutButton /> : null}
-              </div>
+              <UserMenu />
             ) : authEnabled ? (
               <Link to="/login" className="text-sm font-medium hover:underline">
                 Log in
@@ -99,24 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main className={cn('mx-auto w-full max-w-6xl flex-1 px-4 py-8 pb-24')}>{children}</main>
-      <NetlifyDeployCard href="https://app.netlify.com/drop" />
+      <SetupPrompt />
     </div>
-  )
-}
-
-function NetlifyDeployCard({ href }: { href: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="fixed right-4 bottom-4 z-50 inline-flex min-h-11 max-w-[calc(100vw-2rem)] items-center gap-3 rounded-full border border-[#24434b] bg-[#0b2930] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/15 transition hover:-translate-y-0.5 hover:bg-[#103740] focus-visible:ring-2 focus-visible:ring-[#32e6e2] focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
-      style={{ fontFamily: "'Figtree', sans-serif" }}
-      aria-label="Make this app yours on Netlify"
-    >
-      <img src="/netlify-monogram-darkmode.svg" alt="" className="size-4 shrink-0" />
-      <span className="whitespace-nowrap">Make this app yours</span>
-      <ExternalLink className="size-4 shrink-0 text-[#32e6e2]" aria-hidden="true" />
-    </a>
   )
 }

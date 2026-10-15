@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   isDemoMode,
+  isDeployed,
+  isOfficialDemoSite,
+  isDataEncryptionKeySet,
   isAuthEnabled,
-  getDefaultRole,
   getAllowedSignupDomain,
   isPurgeEnabled,
   getRetentionDays,
@@ -71,6 +73,23 @@ describe('isDemoMode', () => {
     process.env.SITE_NAME = 'user-site'
 
     expect(isDemoMode()).toBe(false)
+    expect(isDeployed()).toBe(true)
+    expect(isOfficialDemoSite()).toBe(false)
+  })
+
+  it('counts the canonical demo project as deployed and official', () => {
+    process.env.SITE_ID = '0572e062-b021-497b-babf-b653423e3c9a'
+
+    expect(isDeployed()).toBe(true)
+    expect(isOfficialDemoSite()).toBe(true)
+  })
+
+  it('is not deployed or official under netlify dev, even on the demo site ID', () => {
+    process.env.NETLIFY_DEV = 'true'
+    process.env.SITE_ID = '0572e062-b021-497b-babf-b653423e3c9a'
+
+    expect(isDeployed()).toBe(false)
+    expect(isOfficialDemoSite()).toBe(false)
   })
 
   it('does not infer demo mode from NETLIFY_DB_URL', () => {
@@ -125,27 +144,6 @@ describe('isAuthEnabled', () => {
     process.env.AUTH_DEV_USER = '{"email":"you@example.com","roles":["admin"]}'
 
     expect(isAuthEnabled()).toBe(true)
-  })
-})
-
-describe('getDefaultRole', () => {
-  afterEach(() => {
-    delete process.env.DEFAULT_ROLE
-  })
-
-  it('throws when DEFAULT_ROLE is unset', () => {
-    delete process.env.DEFAULT_ROLE
-    expect(() => getDefaultRole()).toThrow(/DEFAULT_ROLE is not set/)
-  })
-
-  it('throws when DEFAULT_ROLE is an empty string', () => {
-    process.env.DEFAULT_ROLE = ''
-    expect(() => getDefaultRole()).toThrow(/DEFAULT_ROLE is not set/)
-  })
-
-  it('returns the configured value', () => {
-    process.env.DEFAULT_ROLE = 'member'
-    expect(getDefaultRole()).toBe('member')
   })
 })
 
@@ -273,5 +271,20 @@ describe('getSalesforceConfig', () => {
     for (const v of vars) process.env[`SALESFORCE_${v}`] = 'x'
     process.env.SALESFORCE_INSTANCE_URL = 'https://acme.my.salesforce.com/'
     expect(getSalesforceConfig()?.instanceUrl).toBe('https://acme.my.salesforce.com')
+  })
+})
+
+describe('setup-state helpers', () => {
+  afterEach(() => {
+    delete process.env.DATA_ENCRYPTION_KEY
+  })
+
+  it('reports whether a valid DATA_ENCRYPTION_KEY is set', () => {
+    delete process.env.DATA_ENCRYPTION_KEY
+    expect(isDataEncryptionKeySet()).toBe(false)
+    process.env.DATA_ENCRYPTION_KEY = 'too-short'
+    expect(isDataEncryptionKeySet()).toBe(false)
+    process.env.DATA_ENCRYPTION_KEY = Buffer.alloc(32, 1).toString('base64')
+    expect(isDataEncryptionKeySet()).toBe(true)
   })
 })
