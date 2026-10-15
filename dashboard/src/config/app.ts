@@ -6,7 +6,7 @@
  * name, tagline, or color — grep for them before adding new UI copy.
  */
 export const appConfig = {
-  productName: 'Pipeline & ARR',
+  productName: 'Pipeline',
   tagline: 'Pipeline and recurring revenue, at a glance.',
   // Completes "This is a starting point for ..." on the About page (demo site
   // only). Describe what the pack does for the team, lowercase, no full stop.
@@ -19,7 +19,7 @@ export const appConfig = {
     // Path relative to /public. Swap the file and keep the same path, or
     // change the path here.
     src: '/logo.svg',
-    alt: 'Pipeline & ARR logo',
+    alt: 'Pipeline logo',
   },
   colors: {
     // HSL channel triples (no `hsl()` wrapper) so they can be interpolated
