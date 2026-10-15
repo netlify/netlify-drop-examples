@@ -133,7 +133,7 @@ Anyone signed in can change the text on any slide from the browser, and the
 changes stay for everyone who opens the deck.
 
 - Click the pencil in the nav bar (it appears when Netlify Identity is on).
-  Signed-out visitors are asked to log in. Edit the dashed text, then use the
+  Signed-out visitors are asked to log in (see Sign-in below). Edit the dashed text, then use the
   check mark to save, or the pencil again to cancel. The reset icon restores the
   slide's original text.
 - Editing changes text only. Layout, images and styles stay as written, and Enter
@@ -166,6 +166,27 @@ another domain stops working too. Domains match exactly (`example.com` does not 
 restriction. The hooks live in `netlify/functions/identity.mts` and the check in
 `netlify/lib/domains.mts`. Invite-only registration is still the better first gate:
 this is a second one for teams that share an email domain.
+
+### Sign-in
+
+The login dialog (`decks/components/EditLogin.vue`) follows Identity's settings, so
+there is nothing to change in the code when you change them:
+
+- **Registration open:** the dialog offers Sign up. With email confirmation on, it
+  shows a "Check your email" screen and the link in the email finishes signing up.
+- **Invite only:** no Sign up option, just a line saying sign-up is by invitation.
+- **External providers:** each enabled provider (Google, GitHub, and so on) gets a
+  button. If email sign-in is turned off and a provider is on, only the provider
+  buttons show.
+- **Forgot password:** sends Identity's reset email.
+
+Identity's emails (invite, confirmation, password reset) and provider logins
+always return to the site root, which is the static home page. A small script there
+(`authForward` in `scripts/build-index.mjs`) forwards the link to the deck the person
+started from, or to the first deck, where `decks/edits.ts` finishes it: an invite or
+reset link asks for a password, and a confirmation or provider login signs the person in.
+A link that has expired or was already used, or a provider that refuses the login,
+opens the login dialog with a message saying so.
 
 Identity doesn't run under `netlify dev`. Test sign-in on a deploy or a Deploy
 Preview. With Identity not enabled, the deck works as before and the pencil is hidden.
