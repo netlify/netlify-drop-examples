@@ -40,12 +40,10 @@ each deck's first slide, or as a dense list that also shows each deck's `info` l
 remembered). Thumbnails are live, scaled-down copies of the first slide, so they
 never go stale and the build needs no browser. The list view doesn't load them.
 
-Below the decks, the home page has a short "About this app" blurb that links to
-`/about/`, a page adapted from the app-pack template's About page: four cards on your decks,
-edits and notes, sign-in and permissions, and publishing. The wording avoids
-technical terms on purpose, since it's for people making their own copy.
-Both come from `scripts/build-index.mjs` (`blurb` and `aboutCards`); edit the text there.
-Because `/about/` is taken, a deck can't be named `about.md` (the build says so).
+Below the decks, the home page has an "About this app" blurb. It orients and links to
+the pack's template page ("See everything you can configure"), and never holds setup
+steps or settings. Its wording follows the App Pack content system. The template page
+URL is `TEMPLATE_URL` in `scripts/build-index.mjs`.
 
 To add a deck:
 

@@ -18,7 +18,7 @@ This repo is a Slidev deck template. It is not an app.
   state in `decks/sidebar.ts` and the `b` shortcut in `decks/setup/shortcuts.ts`. Its styles are at the end of `style.css`. It imports
   Slidev client internals (`@slidev/client/...`), so re-check it after any
   Slidev upgrade. Presenter mode is off (`presenter: false`).
-- **Build** with `npm run build`: `scripts/build-index.mjs` writes the home page and `/about/`,
+- **Build** with `npm run build`: `scripts/build-index.mjs` writes the home page,
   then `scripts/build-decks.mjs` builds each deck into `dist/<slug>/`. Check
   `dist/_redirects` lists every deck so deep links work on Netlify.
 - **Text editing and slide notes** are the app features: `netlify/functions/edits.mts`
