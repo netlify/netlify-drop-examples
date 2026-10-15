@@ -4,8 +4,8 @@ import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
 import { ModeToggle } from '@/components/mode-toggle'
 import { SetupPrompt } from '@/components/setup-prompt'
-import { LogoutButton } from '@/auth/client'
-import { Badge } from 'app-packs-ui'
+import { UserMenu } from '@/components/user-menu'
+import { Button } from 'app-packs-ui'
 import { cn } from '@/lib/utils'
 
 /**
@@ -14,6 +14,8 @@ import { cn } from '@/lib/utils'
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const { authEnabled, demoMode, user } = useAppContext()
+  // The demo site shows About to everyone; a deployed copy only to its admins.
+  const showAbout = demoMode || !!user?.roles.includes(appConfig.adminRole)
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -35,32 +37,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {item.label}
               </Link>
             ))}
-            {user?.roles?.includes(appConfig.adminRole)
-              ? appConfig.nav.admin.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className="hover:text-foreground [&.active]:font-medium [&.active]:text-foreground"
-                    activeProps={{ className: 'active' }}
-                  >
-                    {item.label}
-                  </Link>
-                ))
-              : null}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3">
-            {demoMode ? (
-              <Badge variant="secondary" className="hidden sm:inline-flex">
-                Sample data
-              </Badge>
+          <div className="ml-auto flex items-center gap-1 sm:gap-3">
+            {showAbout ? (
+              <Button asChild variant="outline" size="small">
+                <Link to="/about">
+                  <span className="sm:hidden">About</span>
+                  <span className="hidden sm:inline">About this app</span>
+                </Link>
+              </Button>
             ) : null}
             <ModeToggle />
             {user ? (
-              <div className="flex items-center gap-2">
-                <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
-                {authEnabled ? <LogoutButton /> : null}
-              </div>
+              <UserMenu />
             ) : authEnabled ? (
               <Link to="/login" className="text-sm font-medium hover:underline">
                 Log in
