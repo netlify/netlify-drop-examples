@@ -111,6 +111,7 @@
     "src/datasets/salesforce-refresh.ts",
     "src/datasets/salesforce.test.ts",
     "src/datasets/snowflake.test.ts",
+    "src/db/client.test.ts",
     "src/db/client.ts",
     "src/db/rls.ts",
     "src/db/schema.ts",

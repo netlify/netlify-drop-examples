@@ -17,7 +17,7 @@ import type { Json } from '@/db/schema'
  */
 export const trackEvent = createIsomorphicFn()
   .server(async (name: string, props?: Record<string, unknown>) => {
-    const user = isAuthEnabled() ? await getSessionUser() : null
+    const user = (await isAuthEnabled()) ? await getSessionUser() : null
     await insertEvent({
       name,
       path: null,

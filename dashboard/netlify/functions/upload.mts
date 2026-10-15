@@ -12,7 +12,7 @@ export default async (req: Request) => {
   // These endpoints touch real Netlify Blobs storage, so they fail closed
   // rather than falling back to demo-mode-style "auth off means open"
   // behavior — see README > Uploads.
-  if (!isAuthEnabled()) {
+  if (!(await isAuthEnabled())) {
     return Response.json({ error: 'not_configured' }, { status: 403 })
   }
 

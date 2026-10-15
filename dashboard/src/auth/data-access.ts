@@ -22,7 +22,7 @@ export const dashboardRoles = [appConfig.roles.viewer, appConfig.roles.editor, a
 export async function resolveDataAccess(
   allowedRoles: Array<string>,
 ): Promise<{ ok: true; access: DataAccess } | { ok: false; status: 401 | 403; reason: string }> {
-  if (!isAuthEnabled()) {
+  if (!(await isAuthEnabled())) {
     if (isDemoMode()) return { ok: true, access: { user: null, dbRole: 'admin' } }
     return {
       ok: false,

@@ -52,6 +52,11 @@ function deployed(roles: Array<string> | null) {
   process.env.SITE_ID = 'user-site-id'
   process.env.SITE_NAME = 'user-site'
   mockGetIdentityConfig.mockReturnValue({ url: 'https://x.netlify.app/.netlify/identity' })
+  // Identity is on for this site: the settings endpoint answers.
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => new Response('{}', { status: 200 })),
+  )
   mockGetUser.mockResolvedValue(roles ? { id: '1', email: 'u@example.com', roles } : null)
 }
 
@@ -59,6 +64,7 @@ describe('dataset function authorization', () => {
   const env = { ...process.env }
   afterEach(() => {
     process.env = { ...env }
+    vi.unstubAllGlobals()
     vi.clearAllMocks()
     mockGetIdentityConfig.mockReturnValue(null)
   })

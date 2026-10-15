@@ -16,7 +16,7 @@ export async function auditFromFunction(
   before?: unknown,
   after?: unknown,
 ): Promise<void> {
-  if (!isAuthEnabled()) return
+  if (!(await isAuthEnabled())) return
   const user = await getSessionUser()
   await insertAudit({
     actorId: user?.id ?? null,

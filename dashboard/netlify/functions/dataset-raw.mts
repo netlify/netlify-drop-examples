@@ -13,7 +13,7 @@ import { getRawDataset } from '../../src/lib/dataset-blobs'
  * like the upload endpoints.
  */
 export default async (_req: Request, context: Context) => {
-  if (!isAuthEnabled()) return Response.json({ error: 'not_configured' }, { status: 403 })
+  if (!(await isAuthEnabled())) return Response.json({ error: 'not_configured' }, { status: 403 })
   const denied = await checkRole(appConfig.dataEditorRoles)
   if (denied) return denied
 

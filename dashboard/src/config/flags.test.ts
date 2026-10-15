@@ -5,6 +5,7 @@ import {
   isOfficialDemoSite,
   isDataEncryptionKeySet,
   isAuthEnabled,
+  clearAuthEnabledCache,
   getAllowedSignupDomain,
   isPurgeEnabled,
   getRetentionDays,
@@ -101,49 +102,89 @@ describe('isDemoMode', () => {
 
 describe('isAuthEnabled', () => {
   const original = { ...process.env }
+  const identityUrl = 'https://example.netlify.app/.netlify/identity'
+  const mockFetch = vi.fn()
 
   beforeEach(() => {
     process.env = { ...original }
     delete process.env.NETLIFY_DEV
     delete process.env.AUTH_DEV_USER
-    delete process.env.SITE_ID
     delete process.env.NETLIFY_SITE_ID
     delete process.env.SITE_NAME
-    mockGetIdentityConfig.mockReturnValue(null)
+    process.env.SITE_ID = 'user-site-id'
+    clearAuthEnabledCache()
+    mockGetIdentityConfig.mockReturnValue({ url: identityUrl })
+    mockFetch.mockReset()
+    vi.stubGlobal('fetch', mockFetch)
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   afterEach(() => {
     process.env = { ...original }
     mockGetIdentityConfig.mockReset()
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
   })
 
-  it('is false when Identity is not configured', () => {
-    process.env.SITE_ID = 'user-site-id'
-    process.env.SITE_NAME = 'user-site'
+  it('is true when the Identity settings endpoint answers', async () => {
+    mockFetch.mockResolvedValue(new Response('{}', { status: 200 }))
 
-    expect(isAuthEnabled()).toBe(false)
+    expect(await isAuthEnabled()).toBe(true)
+    expect(mockFetch).toHaveBeenCalledWith(`${identityUrl}/settings`, expect.anything())
   })
 
-  it('is true when Netlify Identity config is available', () => {
-    process.env.SITE_ID = 'user-site-id'
-    process.env.SITE_NAME = 'user-site'
-    mockGetIdentityConfig.mockReturnValue({ url: 'https://example.netlify.app/.netlify/identity' })
+  it('is false when Identity is off on the platform (settings endpoint 404s), even though the config URL exists', async () => {
+    mockFetch.mockResolvedValue(new Response('Not found', { status: 404 }))
 
-    expect(isAuthEnabled()).toBe(true)
+    expect(await isAuthEnabled()).toBe(false)
   })
 
-  it('is false on the demo project even if Identity config is discoverable', () => {
-    process.env.SITE_NAME = 'app-pack-template'
-    mockGetIdentityConfig.mockReturnValue({ url: 'https://app-pack-template.netlify.app/.netlify/identity' })
+  it('is false when no Identity context is available', async () => {
+    mockGetIdentityConfig.mockReturnValue(null)
 
-    expect(isAuthEnabled()).toBe(false)
+    expect(await isAuthEnabled()).toBe(false)
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('turns on under netlify dev when a fake auth user is configured', () => {
+  it('fails closed (true) on server errors and network failures, without caching them', async () => {
+    mockFetch.mockResolvedValueOnce(new Response('', { status: 503 }))
+    expect(await isAuthEnabled()).toBe(true)
+
+    mockFetch.mockRejectedValueOnce(new Error('network down'))
+    expect(await isAuthEnabled()).toBe(true)
+
+    mockFetch.mockResolvedValueOnce(new Response('Not found', { status: 404 }))
+    expect(await isAuthEnabled()).toBe(false)
+  })
+
+  it('caches definitive answers briefly', async () => {
+    mockFetch.mockResolvedValue(new Response('{}', { status: 200 }))
+
+    await isAuthEnabled()
+    await isAuthEnabled()
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('is false on the official demo site without asking the platform', async () => {
+    process.env.SITE_ID = '0572e062-b021-497b-babf-b653423e3c9a'
+
+    expect(await isAuthEnabled()).toBe(false)
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('is false in local development without asking the platform', async () => {
+    delete process.env.SITE_ID
+
+    expect(await isAuthEnabled()).toBe(false)
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('turns on under netlify dev when a fake auth user is configured', async () => {
     process.env.NETLIFY_DEV = 'true'
     process.env.AUTH_DEV_USER = '{"email":"you@example.com","roles":["admin"]}'
 
-    expect(isAuthEnabled()).toBe(true)
+    expect(await isAuthEnabled()).toBe(true)
   })
 })
 
