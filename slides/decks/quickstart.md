@@ -21,7 +21,7 @@ fonts:
 <div class="cover-shell">
   <div class="cover-head">
     <div class="cover-mark">
-      <span class="cover-series">Slides App Pack</span>
+      <span class="cover-series">Slides template</span>
     </div>
     <p class="cover-series">Guide</p>
   </div>

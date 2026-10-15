@@ -32,7 +32,7 @@ const icon = (inner, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill=
 const blurb = `
     <section class="blurb" aria-labelledby="blurb-title">
       <h2 id="blurb-title">About this app</h2>
-      <p>This is Slides, built from an App Pack. Your edits and notes are saved in Netlify Blobs.</p>
+      <p>This is Slides, built from a template. Your edits and notes are saved in Netlify Blobs.</p>
       <a class="blurb-link" href="${TEMPLATE_URL}" target="_blank" rel="noreferrer">See everything you can configure${icon('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>')}</a>
     </section>`
 
