@@ -26,6 +26,7 @@
     "package-lock.json",
     "package.json",
     "public/favicon.svg",
+    "public/google.svg",
     "public/logo.svg",
     "public/netlify-logo-darkmode.svg",
     "public/netlify-logo-lightmode.svg",

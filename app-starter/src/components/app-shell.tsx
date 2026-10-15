@@ -23,7 +23,15 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="border-b">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:gap-6">
           <Link to="/" className="flex items-center gap-2 font-semibold">
-            <img src={appConfig.logo.src} alt={appConfig.logo.alt} className="size-6" />
+            {/* width/height keep the logo 24px even if the stylesheet hasn't applied
+              yet (the SVG has no intrinsic size and would fill its container). */}
+            <img
+              src={appConfig.logo.src}
+              alt={appConfig.logo.alt}
+              width={24}
+              height={24}
+              className="size-6"
+            />
             <span className="hidden sm:inline">{appConfig.productName}</span>
           </Link>
 

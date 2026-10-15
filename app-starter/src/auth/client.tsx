@@ -15,7 +15,7 @@ import {
   type Settings,
 } from '@netlify/identity'
 import { Button, Input, Alert, AlertTitle, AlertDescription, Skeleton, toast } from 'app-packs-ui'
-import { Field, FieldLabel, FieldError, FieldGroup, FieldDescription } from '@/components/ui/field'
+import { Field, FieldLabel, FieldError, FieldGroup } from '@/components/ui/field'
 import { Separator } from '@/components/ui/separator'
 import { useSubmission } from '@/lib/submission'
 import { needsFirstAdminServer } from '@/server/first-user'
@@ -84,6 +84,11 @@ const PROVIDER_LABELS: Record<AuthProvider, string> = {
   bitbucket: 'Bitbucket',
   facebook: 'Facebook',
   email: 'Email',
+}
+
+// Brand marks for providers that have one in `/public`. Others show text only.
+const PROVIDER_ICONS: Partial<Record<AuthProvider, string>> = {
+  google: '/google.svg',
 }
 
 /**
@@ -402,26 +407,23 @@ export function LoginForm() {
           ) : null}
           <div className="grid gap-2">
             {oauthProviders.map((provider) => (
-              <Button
-                key={provider}
-                type="button"
-                variant={providerOnly ? 'primary' : 'outline'}
-                onClick={() => oauthLogin(provider)}
-              >
+              <Button key={provider} type="button" variant="outline" onClick={() => oauthLogin(provider)}>
+                {PROVIDER_ICONS[provider] ? (
+                  <img
+                    src={PROVIDER_ICONS[provider]}
+                    alt=""
+                    width={16}
+                    height={16}
+                    className="size-4"
+                    aria-hidden="true"
+                  />
+                ) : null}
                 {providerOnly ? `Continue with ${PROVIDER_LABELS[provider]}` : PROVIDER_LABELS[provider]}
               </Button>
             ))}
           </div>
         </>
       ) : null}
-
-      <FieldDescription className="text-center">
-        Local dev tip: Identity doesn't work outside a Netlify deploy. Set{' '}
-        <code>
-          AUTH_DEV_USER='{'{'}"email":"you@example.com","roles":["admin"]{'}'}'
-        </code>{' '}
-        instead.
-      </FieldDescription>
     </div>
   )
 }
