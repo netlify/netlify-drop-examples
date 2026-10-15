@@ -76,6 +76,15 @@ describe('SetupPrompt', () => {
     expect(screen.queryByRole('complementary', { name: 'Setup checklist' })).toBeNull()
   })
 
+  it('sizes the badge logo with attributes, so it stays small before the stylesheet applies', () => {
+    setContext({ officialDemoSite: true, deployed: true })
+    const { container } = render(<SetupPrompt />)
+    const img = container.querySelector('img')
+
+    expect(img?.getAttribute('width')).toBe('16')
+    expect(img?.getAttribute('height')).toBe('16')
+  })
+
   it('hides itself once every required row is done', () => {
     setContext({
       authEnabled: true,
