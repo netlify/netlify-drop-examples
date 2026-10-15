@@ -17,3 +17,19 @@ export async function hasAnyUsers(): Promise<boolean> {
   const users = await admin.listUsers({ perPage: 1 })
   return users.length > 0
 }
+
+/**
+ * Whether anyone other than `userId` has a confirmed Identity account. The
+ * signup hook uses this, not `hasAnyUsers()`: with email confirmation on, the
+ * hook runs when the new person confirms, by which point their own record is
+ * already in Identity, so "any user exists" would always be true and the
+ * first person would never become the admin. Excluding the signing-up user,
+ * and ignoring accounts that never confirmed, makes the first person to
+ * confirm the admin whether or not their own record is listed yet.
+ *
+ * Looks at the first 100 users only, which is plenty for a fresh site.
+ */
+export async function hasOtherConfirmedUser(userId: string): Promise<boolean> {
+  const users = await admin.listUsers({ perPage: 100 })
+  return users.some((user) => user.id !== userId && !!user.confirmedAt)
+}

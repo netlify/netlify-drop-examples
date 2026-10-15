@@ -4,6 +4,7 @@ import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
 import { ModeToggle } from '@/components/mode-toggle'
 import { SetupPrompt } from '@/components/setup-prompt'
+import { IdentityOffBanner } from '@/components/identity-off-banner'
 import { UserMenu } from '@/components/user-menu'
 import { Button } from 'app-packs-ui'
 import { cn } from '@/lib/utils'
@@ -26,7 +27,15 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="border-b">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:gap-6">
           <Link to="/" className="flex items-center gap-2 font-semibold">
-            <img src={appConfig.logo.src} alt={appConfig.logo.alt} className="size-6" />
+            {/* width/height keep the logo 24px even if the stylesheet hasn't applied
+              yet (the SVG has no intrinsic size and would fill its container). */}
+            <img
+              src={appConfig.logo.src}
+              alt={appConfig.logo.alt}
+              width={24}
+              height={24}
+              className="size-6"
+            />
             <span className="hidden sm:inline">{appConfig.productName}</span>
           </Link>
 
@@ -76,6 +85,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+
+      <IdentityOffBanner />
 
       <main className={cn('mx-auto w-full max-w-6xl flex-1 px-4 py-8 pb-24')}>{children}</main>
       <SetupPrompt />
