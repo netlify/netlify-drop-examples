@@ -8,6 +8,12 @@ import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
  */
 export const Route = createFileRoute('/_app')({
   beforeLoad: ({ context }) => {
+    // A deployed copy with Identity off serves no data (`resolveDataAccess()`
+    // fails closed), so every page here would only show a 403. `/login`
+    // explains how to turn sign-in on instead.
+    if (!context.authEnabled && !context.demoMode) {
+      throw redirect({ to: '/login' })
+    }
     if (context.authEnabled && !context.user) {
       throw redirect({ to: '/login' })
     }

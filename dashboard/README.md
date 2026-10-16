@@ -270,9 +270,9 @@ Netlify dashboard:
 **When Identity isn't on yet for a deployed copy**, the dashboard fails
 closed and serves no data, so the app says why, gently: a banner under the
 header on every page ("Sign-in isn't on yet. The dashboard won't show any data
-until it is…") and a "Let's turn on sign-in" notice at `/login`, instead of a
-silent redirect. Both
-go away on their own once Identity is on. They never show in demo mode.
+until it is…") and a "Let's turn on sign-in" notice at `/login`. Dashboard
+pages redirect to that notice rather than showing a 403 error. All of this
+goes away on its own once Identity is on, and never shows in demo mode.
 
 If Identity is unavailable but an auth flow is reached, `/login` shows a
 persistent alert instead of failing silently through a generic error on
