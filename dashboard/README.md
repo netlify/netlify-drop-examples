@@ -141,17 +141,18 @@ Each row has a "Learn more" link to a section of the template page
 (`appConfig.templatePageUrl`, anchor `#before-you-share` or
 `#connect-your-data`).
 
-1. **Check who can open your app** (manual, optional) — project visibility.
-2. **Set the data encryption key** (required) — done when a valid
+1. **Set the data encryption key** (required) — done when a valid
    `DATA_ENCRYPTION_KEY` is set.
-3. **Turn on app sign-in (Netlify Identity)** (required) — done when Identity
+2. **Turn on app sign-in (Netlify Identity)** (required) — done when Identity
    is on. Also tells the deployer to sign up first: the first signup becomes
    the admin automatically, so there's no separate step for it.
-4. **Choose who can sign up** (manual, optional) — `ALLOWED_SIGNUP_DOMAIN`
+3. **Choose who can sign up** (manual, optional) — `ALLOWED_SIGNUP_DOMAIN`
    and/or invite-only signups.
-5. **Connect your data** (optional) — Snowflake and Salesforce variables in
+4. **Connect your data** (optional) — Snowflake and Salesforce variables in
    one row; done when either source is fully configured. CSV upload on
    `/data` works without either.
+5. **Check who can open your app** (manual, optional) — project visibility.
+   Last on purpose: get the app working first, then decide who can reach it.
 
 To remove it, delete `src/components/setup-prompt.tsx`,
 `src/components/go-live-checklist.tsx` and
@@ -268,11 +269,11 @@ Netlify dashboard:
 | Sign-up off (invite only)                               | The Sign up option is hidden and the form says sign-up is by invitation only. If nobody has an account yet, it tells the deployer to invite themselves from the Identity tab.                                                                                    |
 
 **When Identity isn't on yet for a deployed copy**, the dashboard fails
-closed and serves no data, so the app says why, gently: a banner under the
-header on every page ("Sign-in isn't on yet. The dashboard won't show any data
-until it is…") and a "Let's turn on sign-in" notice at `/login`. Dashboard
-pages redirect to that notice rather than showing a 403 error. All of this
-goes away on its own once Identity is on, and never shows in demo mode.
+closed and serves no data, so the app says why in one place: the "Finish
+setting up" checklist, whose "Turn on app sign-in" row links straight to
+Identity settings. Dashboard pages redirect to a "Let's turn on sign-in"
+notice at `/login` rather than showing a 403 error. Both go away on their own
+once Identity is on. Neither shows in demo mode.
 
 If Identity is unavailable but an auth flow is reached, `/login` shows a
 persistent alert instead of failing silently through a generic error on

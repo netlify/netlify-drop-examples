@@ -34,6 +34,7 @@
     "scripts/build-decks.mjs",
     "scripts/build-index.mjs",
     "scripts/deck.mjs",
-    "scripts/decks.mjs"
+    "scripts/decks.mjs",
+    "decks/og.png"
   ]
 }

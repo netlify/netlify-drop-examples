@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, within } from '@testing-library/react'
 import { appConfig } from '@/config/app'
 import type { AppContext } from '@/server/context'
 import { SetupPrompt } from './setup-prompt'
@@ -80,17 +80,23 @@ describe('SetupPrompt', () => {
 
   it('lists the standard rows in order', () => {
     render(<SetupPrompt />)
-    const titles = screen
+    const titles = within(screen.getByLabelText('Setup checklist'))
       .getAllByRole('button')
       .map((button) => button.textContent ?? '')
       .filter((text) => text && !text.includes('Dismiss'))
 
     expect(titles).toEqual([
-      'Check who can open your appOptional',
       'Turn on app sign-in (Netlify Identity)',
       'Make yourself the admin',
       'Choose who can sign upOptional',
+      'Check who can open your appOptional',
     ])
+  })
+
+  it('offers a pill that counts finished rows, for small screens', () => {
+    render(<SetupPrompt />)
+
+    expect(screen.getByRole('button', { name: /Finish setting up\s*0\/4/ })).toBeTruthy()
   })
 
   it('ticking a manual row never hides the card while a required row is open', () => {

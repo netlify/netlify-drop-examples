@@ -91,18 +91,19 @@ Each row has a title, why, action (a dashboard link or an "Ask your agent"
 prompt), done when, required, and a "Learn more" link to a section of the
 template page (`appConfig.templatePageUrl`, anchor `#before-you-share`).
 
-1. **Check who can open your app** (manual, optional) — project visibility in
-   the Netlify dashboard decides who can load the page at all.
-2. **Turn on app sign-in (Netlify Identity)** (required) — done when Identity
+1. **Turn on app sign-in (Netlify Identity)** (required) — done when Identity
    is on. Separate from project visibility.
-3. **Make yourself the admin** (required) — the first signup becomes the
+2. **Make yourself the admin** (required) — the first signup becomes the
    admin; done when Identity is on and you hold the admin role.
-4. **Choose who can sign up** (manual, optional) — set
+3. **Choose who can sign up** (manual, optional) — set
    `ALLOWED_SIGNUP_DOMAIN` (exact domain, enforced by the signup hook in
    `netlify/functions/identity.mts`), and/or turn off open signups and invite
    people from the Identity tab.
+4. **Check who can open your app** (manual, optional) — project visibility in
+   the Netlify dashboard decides who can load the page at all. Last on
+   purpose: get the app working first, then decide who can reach it.
 
-To rebrand, edit `src/config/app.ts` and swap `public/logo.svg`.
+To rebrand, edit `src/config/app.ts` and swap `public/logo.svg` and `public/og.png` (the 1200×630 link-preview image).
 
 To remove it, delete `src/components/setup-prompt.tsx`,
 `src/components/go-live-checklist.tsx` and
@@ -236,10 +237,11 @@ Netlify dashboard:
 | Sign-up off (invite only)                               | The Sign up option is hidden and the form says sign-up is by invitation only. If nobody has an account yet, it tells the deployer to invite themselves from the Identity tab.                                                                                    |
 
 **When Identity isn't on yet for a deployed copy**, every visitor is treated
-as the admin, so the app says so, gently: a banner under the header on every
-page ("Sign-in isn't on yet. Turn it on before you share this link…") and a
-"Let's turn on sign-in" notice at `/login`, instead of a silent redirect. Both
-go away on their own once Identity is on. They never show in demo mode.
+as the admin, so the app says so in one place: the "Finish setting up"
+checklist, whose "Turn on app sign-in" row links straight to Identity settings.
+Following a login link lands on a "Let's turn on sign-in" notice at `/login`,
+instead of a silent redirect. Both go away on their own once Identity is on.
+Neither shows in demo mode.
 
 If Identity is unavailable but an auth flow is reached, `/login` shows a
 persistent alert instead of failing silently through a generic error on

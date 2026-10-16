@@ -4,7 +4,7 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } fro
 import { KpiCard } from '@/components/dashboard/kpi-card'
 import { ArrChart, PipelineChart } from '@/components/dashboard/charts'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 import { getOverview } from '@/server/dashboard'
 import { days, money, pct } from '@/lib/format'
 import { resolveRange } from '@/lib/range'
@@ -13,9 +13,7 @@ export const Route = createFileRoute('/_app/_dash/')({
   loaderDeps: ({ search }) => ({ range: resolveRange(search) }),
   loader: ({ deps }) => getOverview({ data: deps.range }),
   pendingComponent: () => <LoadingState variant="card" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load the overview'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'the overview')} />,
   component: Overview,
 })
 

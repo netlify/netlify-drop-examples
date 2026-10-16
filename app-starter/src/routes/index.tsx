@@ -11,7 +11,7 @@ import {
   Button,
 } from 'app-packs-ui'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 // NOTE: this loader calls the createServerFn-wrapped `listRecordsServer`
 // (src/server/records.ts), not `data/records.ts` directly. Route loaders
@@ -24,7 +24,7 @@ export const Route = createFileRoute('/')({
   loader: () => listRecordsServer(),
   pendingComponent: () => <LoadingState variant="card" />,
   errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load dashboard'} />
+    <ErrorState {...friendlyError(error, 'the dashboard')} />
   ),
   component: Dashboard,
 })

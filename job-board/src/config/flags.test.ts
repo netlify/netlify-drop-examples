@@ -54,6 +54,15 @@ describe('isDemoMode', () => {
     expect(isDeployed()).toBe(false)
   })
 
+  it('is true under vite dev, where the Netlify plugin loads the linked site SITE_ID', () => {
+    process.env.SITE_ID = 'user-site-id'
+    vi.stubEnv('NODE_ENV', 'development')
+
+    expect(isDemoMode()).toBe(true)
+    expect(isDeployed()).toBe(false)
+    vi.unstubAllEnvs()
+  })
+
   it('is true on the official demo site', () => {
     process.env.SITE_ID = appConfig.officialDemoSiteId
 

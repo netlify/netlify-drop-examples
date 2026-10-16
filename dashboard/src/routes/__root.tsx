@@ -21,6 +21,13 @@ export const Route = createRootRoute({
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: appConfig.productName },
       { name: 'description', content: appConfig.tagline },
+      // Link previews. Swap /public/og.png (1200×630) when you rebrand.
+      { property: 'og:title', content: appConfig.productName },
+      { property: 'og:description', content: appConfig.tagline },
+      { property: 'og:image', content: '/og.png' },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
+      { name: 'twitter:card', content: 'summary_large_image' },
     ],
     links: [
       { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },

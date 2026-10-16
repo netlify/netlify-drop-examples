@@ -35,7 +35,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 export const Route = createFileRoute('/_app/manage/courses/$id')({
   loader: ({ params }) => getManagedCourseServer({ data: { id: params.id } }),
@@ -43,9 +43,7 @@ export const Route = createFileRoute('/_app/manage/courses/$id')({
     meta: [{ title: `Edit ${loaderData?.course.title ?? 'course'} · ${appConfig.productName}` }],
   }),
   pendingComponent: () => <LoadingState variant="form" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load course'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'this course')} />,
   component: EditCoursePage,
 })
 

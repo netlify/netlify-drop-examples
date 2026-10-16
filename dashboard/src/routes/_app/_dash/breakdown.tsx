@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DataTable, type DataTableColumn } from '@/components/data-table/data-table'
 import { DataTableColumnHeader } from '@/components/data-table/column-header'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 import { getBreakdown } from '@/server/dashboard'
 import { money, pct } from '@/lib/format'
 import { resolveRange } from '@/lib/range'
@@ -21,9 +21,7 @@ export const Route = createFileRoute('/_app/_dash/breakdown')({
   loaderDeps: ({ search }) => ({ range: resolveRange(search), group: search.group ?? 'segment' }),
   loader: ({ deps }) => getBreakdown({ data: { ...deps.range, groupBy: deps.group } }),
   pendingComponent: () => <LoadingState variant="table" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load breakdown'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'the breakdown')} />,
   component: BreakdownPage,
 })
 

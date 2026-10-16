@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
 import { DateRangePicker, LastUpdated, MethodologySheet } from '@/components/dashboard/header'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 import { getDashboardMeta } from '@/server/dashboard'
 import { resolveRange, validateRangeSearch } from '@/lib/range'
 
@@ -14,9 +14,7 @@ export const Route = createFileRoute('/_app/_dash')({
   validateSearch: validateRangeSearch,
   loader: () => getDashboardMeta(),
   pendingComponent: () => <LoadingState variant="card" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load the dashboard'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'the dashboard')} />,
   component: DashboardLayout,
 })
 

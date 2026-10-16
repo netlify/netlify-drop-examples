@@ -4,13 +4,11 @@ import { Badge, Card, CardContent, CardHeader, CardTitle, toast } from 'app-pack
 import { deleteJobServer, getJobServer, updateJobServer } from '@/server/recruiting'
 import { JobForm } from '@/components/job-form'
 import { ConfirmDelete } from '@/components/confirm-delete'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 import { useSubmission } from '@/lib/submission'
 export const Route = createFileRoute('/_app/recruiting/jobs/$id')({
   loader: ({ params }) => getJobServer({ data: { id: params.id } }),
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load job'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'this job')} />,
   component: EditJob,
 })
 function EditJob() {

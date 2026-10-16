@@ -6,7 +6,7 @@ import { appConfig } from '@/config/app'
 import { Card, CardContent, CardHeader, CardTitle, EmptyState } from 'app-packs-ui'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 const listEventsServer = createServerFn({ method: 'GET' }).handler(async () => {
   await requireRole([appConfig.adminRole])
@@ -16,9 +16,7 @@ const listEventsServer = createServerFn({ method: 'GET' }).handler(async () => {
 export const Route = createFileRoute('/_app/admin/events')({
   loader: () => listEventsServer(),
   pendingComponent: () => <LoadingState variant="table" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load usage events'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'usage events')} />,
   component: EventsPage,
 })
 

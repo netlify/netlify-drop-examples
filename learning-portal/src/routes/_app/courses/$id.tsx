@@ -9,7 +9,7 @@ import { CourseIcon } from '@/components/learning/course-icon'
 import { CountPill, DurationPill, PriorityPill, StatusPill } from '@/components/learning/badges'
 import { ProgressBar } from '@/components/learning/progress-bar'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/_app/courses/$id')({
@@ -18,9 +18,7 @@ export const Route = createFileRoute('/_app/courses/$id')({
     meta: [{ title: `${loaderData?.course.title ?? 'Course'} · ${appConfig.productName}` }],
   }),
   pendingComponent: () => <LoadingState variant="form" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load course'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'this course')} />,
   component: CoursePage,
 })
 

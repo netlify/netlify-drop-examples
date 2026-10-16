@@ -1,8 +1,8 @@
 // Pre-build step: empties dist/ and writes dist/index.html, a static page that
 // links to every deck in decks/. The deck builds then fill in dist/<slug>/.
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { distDir, listDecks } from './decks.mjs'
+import { decksDir, distDir, listDecks } from './decks.mjs'
 
 const escapeHtml = text => text.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 
@@ -60,6 +60,13 @@ const html = `<!doctype html>
   <meta charset="utf-8">${authForward}
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Slides</title>
+  <meta name="description" content="A slide deck builder you deploy and make your own.">
+  <meta property="og:title" content="Slides">
+  <meta property="og:description" content="A slide deck builder you deploy and make your own.">
+  <meta property="og:image" content="/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <style>
     :root { --paper: #fff; --ink: #1b2230; --body: #3a4252; --muted: #667085; --accent: #4f46e5; --rule: rgba(27, 34, 48, .12); --stage: #e9ebf0; }
     @media (prefers-color-scheme: dark) {
@@ -145,4 +152,6 @@ const html = `<!doctype html>
 rmSync(distDir, { recursive: true, force: true })
 mkdirSync(distDir, { recursive: true })
 writeFileSync(path.join(distDir, 'index.html'), html)
+// Link-preview image for the home page (1200×630). Swap decks/og.png to rebrand.
+copyFileSync(path.join(decksDir, 'og.png'), path.join(distDir, 'og.png'))
 console.log(`index: ${decks.length} decks -> dist/index.html`)

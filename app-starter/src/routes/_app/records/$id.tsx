@@ -24,14 +24,12 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 export const Route = createFileRoute('/_app/records/$id')({
   loader: ({ params }) => getRecordServer({ data: { id: params.id } }),
   pendingComponent: () => <LoadingState variant="form" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load record'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'this record')} />,
   component: RecordDetailPage,
 })
 

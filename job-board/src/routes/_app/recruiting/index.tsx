@@ -3,15 +3,13 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { BriefcaseBusiness, Plus, Search, Users } from 'lucide-react'
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from 'app-packs-ui'
 import { listJobsServer, listApplicationsServer } from '@/server/recruiting'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 export const Route = createFileRoute('/_app/recruiting/')({
   loader: async () => {
     const [jobs, applications] = await Promise.all([listJobsServer(), listApplicationsServer()])
     return { jobs, applications }
   },
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load recruiting'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'the hiring overview')} />,
   component: Recruiting,
 })
 function Recruiting() {

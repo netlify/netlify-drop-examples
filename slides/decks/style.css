@@ -1173,6 +1173,9 @@ body:fullscreen #page-root { --slidev-slide-container-background: #000; backgrou
   color: var(--body);
   font-family: var(--font-body);
   box-shadow: 0 24px 60px rgba(27, 34, 48, .3);
+  /* Taller than the screen (e.g. the login dialog on a short phone): scroll inside, never overflow. */
+  max-height: calc(100svh - 2rem);
+  overflow-y: auto;
 }
 .deck-dialog h2 { margin: 0; color: var(--ink); font: 800 1.25rem var(--font-heading); }
 .deck-dialog p { margin: 0; color: var(--muted); font-size: .9rem; }

@@ -3,7 +3,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartCard } from '@/components/dashboard/chart-card'
 import { PipelineChart, pipelineTable } from '@/components/dashboard/charts'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 import { getPipelineByStage } from '@/server/dashboard'
 import { resolveRange } from '@/lib/range'
 
@@ -17,9 +17,7 @@ export const Route = createFileRoute('/_app/_dash/pipeline')({
   loaderDeps: ({ search }) => ({ range: resolveRange(search), by: search.by ?? 'segment' }),
   loader: ({ deps }) => getPipelineByStage({ data: { ...deps.range, breakdown: deps.by } }),
   pendingComponent: () => <LoadingState variant="card" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load pipeline'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'the pipeline')} />,
   component: PipelinePage,
 })
 

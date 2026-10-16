@@ -6,15 +6,13 @@ import { appConfig } from '@/config/app'
 import { ProgressBar } from '@/components/learning/progress-bar'
 import { percent } from '@/components/learning/format'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 export const Route = createFileRoute('/_app/manage/progress')({
   loader: () => getTeamProgressServer(),
   head: () => ({ meta: [{ title: `Team progress · ${appConfig.productName}` }] }),
   pendingComponent: () => <LoadingState variant="table" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load team progress'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'team progress')} />,
   component: TeamProgressPage,
 })
 
