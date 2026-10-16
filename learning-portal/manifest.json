@@ -37,6 +37,7 @@
     "public/netlify-logo-darkmode.svg",
     "public/netlify-logo-lightmode.svg",
     "public/netlify-monogram-darkmode.svg",
+    "public/og.png",
     "scripts/learning-seed-sql.ts",
     "scripts/seed.ts",
     "src/auth/client.test.tsx",
