@@ -130,10 +130,9 @@ export function getDefaultRole(): string {
 /**
  * The email domain new signups must match (see
  * `netlify/functions/identity.mts`), or `undefined` for no restriction.
- * Unlike `getDefaultRole`, this is optional, not fail-loud: the signup hook
- * has no way to tell whether Identity's own "open signups" setting is even
- * on, so it can't force a vertical to configure this the way it forces
- * `DEFAULT_ROLE`. Unset (the default) means unrestricted — correct for an
+ * Optional, not fail-loud: the signup hook has no way to tell whether
+ * Identity's own "open signups" setting is even on, so it can't force a
+ * vertical to configure this. Unset (the default) means unrestricted — correct for an
  * invite-only setup, where every signup already comes from a trusted
  * invite. Matching is exact-domain only (`acme.com`, not `*.acme.com`) —
  * comparison is done against the literal string after `@`, so a

@@ -5,7 +5,8 @@ import { useAppContext } from '@/server/context'
 import { ModeToggle } from '@/components/mode-toggle'
 import { UserMenu } from '@/components/user-menu'
 import { SetupPrompt } from '@/components/setup-prompt'
-import { Badge } from 'app-packs-ui'
+import { IdentityOffBanner } from '@/components/identity-off-banner'
+import { Button } from 'app-packs-ui'
 import { cn } from '@/lib/utils'
 
 /**
@@ -15,6 +16,8 @@ import { cn } from '@/lib/utils'
 export function AppShell({ children }: { children: ReactNode }) {
   const { authEnabled, demoMode, user } = useAppContext()
   const roleLabel = user ? roleLabelFor(user.roles) : null
+  // The demo site shows About to everyone; a deployed copy only to its admins.
+  const showAbout = demoMode || !!user?.roles.includes(appConfig.adminRole)
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -38,11 +41,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3">
-            {demoMode ? (
-              <Badge variant="secondary" className="hidden sm:inline-flex">
-                Sample data
-              </Badge>
+          <div className="ml-auto flex items-center gap-1 sm:gap-3">
+            {showAbout ? (
+              <Button asChild variant="outline" size="small">
+                <Link to="/about">
+                  <span className="sm:hidden">About</span>
+                  <span className="hidden sm:inline">About this app</span>
+                </Link>
+              </Button>
             ) : null}
             <ModeToggle />
             {/* `requireRole()`/`checkRole()` no-op when auth is off, so
@@ -63,6 +69,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+
+      <IdentityOffBanner />
 
       <main className={cn('mx-auto w-full max-w-6xl flex-1 px-4 py-8 pb-36')}>{children}</main>
       <SetupPrompt />

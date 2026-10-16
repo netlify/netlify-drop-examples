@@ -11,7 +11,7 @@ export function NetlifyDeployBadge({ href = 'https://app.netlify.com/drop' }: { 
       style={{ fontFamily: "'Figtree', sans-serif" }}
       aria-label="Make this app yours on Netlify"
     >
-      <img src="/netlify-monogram-darkmode.svg" alt="" className="size-4 shrink-0" />
+      <img src="/netlify-monogram-darkmode.svg" alt="" width={16} height={16} className="size-4 shrink-0" />
       <span className="whitespace-nowrap">Make this app yours</span>
       <ExternalLink className="size-4 shrink-0 text-[#32e6e2]" aria-hidden="true" />
     </a>
