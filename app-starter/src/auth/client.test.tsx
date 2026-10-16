@@ -69,6 +69,18 @@ describe('LoginForm', () => {
     vi.resetAllMocks()
   })
 
+  it('explains a too-short password on submit, without attempting signup', async () => {
+    setSettings()
+    render(<LoginForm />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Sign up' }))
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'new@example.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'short' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Sign up' }))
+
+    expect(await screen.findByText('Password must be at least 8 characters.')).toBeTruthy()
+    expect(mockSignup).not.toHaveBeenCalled()
+  })
+
   it('asks the person to check their email when signup needs confirmation', async () => {
     setSettings({ autoconfirm: false })
     mockSignup.mockResolvedValue({ id: 'u1', email: 'new@example.com' })
