@@ -18,14 +18,17 @@ import { appConfig } from '@/config/app'
 
 /**
  * True on a real Netlify deploy (production, previews, branch deploys), false
- * on a laptop — including `netlify dev` when the repo is linked to a site,
- * which sets `SITE_ID` too.
+ * on a laptop — including when the repo (or any folder above it) is linked to
+ * a site, which sets `SITE_ID` too. `netlify dev` marks that with
+ * `NETLIFY_DEV`; plain `npm run dev` (the Netlify Vite plugin) only sets
+ * `NETLIFY_LOCAL`, so both are checked.
  *
- * Only `SITE_ID` (and `NETLIFY_DEV`) work here. `CONTEXT` and `NETLIFY` are
- * build-time-only variables and are undefined inside the deployed function.
+ * Only `SITE_ID` (and those two local markers) work here. `CONTEXT` and
+ * `NETLIFY` are build-time-only variables and are undefined inside the
+ * deployed function.
  */
 export function isDeployed(): boolean {
-  return !!process.env.SITE_ID && process.env.NETLIFY_DEV !== 'true'
+  return !!process.env.SITE_ID && process.env.NETLIFY_DEV !== 'true' && process.env.NETLIFY_LOCAL !== 'true'
 }
 
 /** True only on the canonical public demo project (`appConfig.officialDemoSiteId`). */
@@ -118,30 +121,11 @@ export async function isAuthEnabled(): Promise<boolean> {
 }
 
 /**
- * The role assigned to every new user at signup (see
- * `netlify/functions/identity.mts`). Unlike `isDemoMode`/`isAuthEnabled`,
- * this has no default: a vertical template MUST set `DEFAULT_ROLE` before
- * enabling Identity signups, or every signup attempt fails loudly instead of
- * silently assigning a made-up role name.
- */
-export function getDefaultRole(): string {
-  const value = process.env.DEFAULT_ROLE
-  if (!value) {
-    throw new Error(
-      'DEFAULT_ROLE is not set. Set it to the role your vertical assigns new signups ' +
-        '(e.g. "member") as a site environment variable before enabling Identity signups. See README > Roles.',
-    )
-  }
-  return value
-}
-
-/**
  * The email domain new signups must match (see
  * `netlify/functions/identity.mts`), or `undefined` for no restriction.
- * Unlike `getDefaultRole`, this is optional, not fail-loud: the signup hook
- * has no way to tell whether Identity's own "open signups" setting is even
- * on, so it can't force a vertical to configure this the way it forces
- * `DEFAULT_ROLE`. Unset (the default) means unrestricted — correct for an
+ * Optional, not fail-loud: the signup hook has no way to tell whether
+ * Identity's own "open signups" setting is even on, so it can't force a
+ * vertical to configure this. Unset (the default) means unrestricted — correct for an
  * invite-only setup, where every signup already comes from a trusted
  * invite. Matching is exact-domain only (`acme.com`, not `*.acme.com`) —
  * comparison is done against the literal string after `@`, so a

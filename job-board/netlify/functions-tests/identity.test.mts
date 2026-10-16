@@ -13,6 +13,8 @@ vi.mock('@netlify/identity', () => ({
 
 const { default: identity } = await import('../functions/identity.mjs')
 
+const CONFIRMED = '2026-10-15T00:00:00Z'
+
 function fakeEvent(email: string | undefined) {
   return {
     user: { id: 'u1', email, appMetadata: {} },
@@ -28,10 +30,9 @@ describe('identity signup hook', () => {
     listUsers.mockReset()
   })
 
-  it('assigns DEFAULT_ROLE when ALLOWED_SIGNUP_DOMAIN is unset and a user already exists', async () => {
-    process.env.DEFAULT_ROLE = 'member'
+  it('assigns the member role when ALLOWED_SIGNUP_DOMAIN is unset and a user already exists', async () => {
     delete process.env.ALLOWED_SIGNUP_DOMAIN
-    listUsers.mockResolvedValue([{ id: 'existing' }])
+    listUsers.mockResolvedValue([{ id: 'existing', confirmedAt: CONFIRMED }])
     const event = fakeEvent('someone@example.com')
 
     const result = await identity.userSignup(event as never)
@@ -41,9 +42,8 @@ describe('identity signup hook', () => {
   })
 
   it('allows a signup whose email domain matches ALLOWED_SIGNUP_DOMAIN exactly (case-insensitive)', async () => {
-    process.env.DEFAULT_ROLE = 'member'
     process.env.ALLOWED_SIGNUP_DOMAIN = 'acme.com'
-    listUsers.mockResolvedValue([{ id: 'existing' }])
+    listUsers.mockResolvedValue([{ id: 'existing', confirmedAt: CONFIRMED }])
     const event = fakeEvent('someone@Acme.com')
 
     const result = await identity.userSignup(event as never)
@@ -53,7 +53,6 @@ describe('identity signup hook', () => {
   })
 
   it('denies a signup whose email domain does not match', async () => {
-    process.env.DEFAULT_ROLE = 'member'
     process.env.ALLOWED_SIGNUP_DOMAIN = 'acme.com'
     const event = fakeEvent('someone@other.com')
 
@@ -64,7 +63,6 @@ describe('identity signup hook', () => {
   })
 
   it('denies a subdomain, since matching is exact-domain only', async () => {
-    process.env.DEFAULT_ROLE = 'member'
     process.env.ALLOWED_SIGNUP_DOMAIN = 'acme.com'
     const event = fakeEvent('someone@sub.acme.com')
 
@@ -74,7 +72,6 @@ describe('identity signup hook', () => {
   })
 
   it('denies a signup with no email when a domain restriction is configured', async () => {
-    process.env.DEFAULT_ROLE = 'member'
     process.env.ALLOWED_SIGNUP_DOMAIN = 'acme.com'
     const event = fakeEvent(undefined)
 
@@ -84,7 +81,6 @@ describe('identity signup hook', () => {
   })
 
   it('assigns appConfig.adminRole to the first-ever signup', async () => {
-    process.env.DEFAULT_ROLE = 'member'
     delete process.env.ALLOWED_SIGNUP_DOMAIN
     listUsers.mockResolvedValue([])
     const event = fakeEvent('first@example.com')
@@ -94,8 +90,27 @@ describe('identity signup hook', () => {
     expect(result?.user.appMetadata?.roles).toEqual(['admin'])
   })
 
-  it('falls back to DEFAULT_ROLE if the admin API call fails', async () => {
-    process.env.DEFAULT_ROLE = 'member'
+  it('makes the first person to confirm the admin even when their own record is listed', async () => {
+    delete process.env.ALLOWED_SIGNUP_DOMAIN
+    listUsers.mockResolvedValue([{ id: 'u1', confirmedAt: CONFIRMED }])
+    const event = fakeEvent('first@example.com')
+
+    const result = await identity.userSignup(event as never)
+
+    expect(result?.user.appMetadata?.roles).toEqual(['admin'])
+  })
+
+  it('does not let an unconfirmed account block the first admin', async () => {
+    delete process.env.ALLOWED_SIGNUP_DOMAIN
+    listUsers.mockResolvedValue([{ id: 'u1', confirmedAt: CONFIRMED }, { id: 'pending' }])
+    const event = fakeEvent('first@example.com')
+
+    const result = await identity.userSignup(event as never)
+
+    expect(result?.user.appMetadata?.roles).toEqual(['admin'])
+  })
+
+  it('falls back to the member role if the admin API call fails', async () => {
     delete process.env.ALLOWED_SIGNUP_DOMAIN
     listUsers.mockRejectedValue(new Error('identity admin API unreachable'))
     const event = fakeEvent('someone@example.com')

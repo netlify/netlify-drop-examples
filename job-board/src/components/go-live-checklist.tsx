@@ -1,8 +1,9 @@
-import { useState, useSyncExternalStore } from 'react'
-import { Check, ChevronRight, Copy, ExternalLink, X } from 'lucide-react'
+import { useMemo, useState, useSyncExternalStore } from 'react'
+import { Check, ChevronRight, X } from 'lucide-react'
 import { Button } from 'app-packs-ui'
 import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
+import { IDENTITY_SETTINGS_URL, VISIBILITY_SETTINGS_URL } from '@/lib/dashboard-links'
 import {
   Dialog,
   DialogContent,
@@ -15,33 +16,29 @@ import { cn } from '@/lib/utils'
 
 const DISMISS_KEY = 'go-live-checklist-dismissed'
 const MANUAL_KEY = 'go-live-checklist-manual'
-const VISIBILITY_SETTINGS_URL = 'https://app.netlify.com/projects/~/configuration/general'
-const IDENTITY_SETTINGS_URL = 'https://app.netlify.com/projects/~/identity'
 
 /**
- * One row of the checklist. Follows the App Pack content system: every row
- * has a title, a one-sentence why, an action (dashboard path and/or an "Ask
- * your agent" prompt), a done check (or manual), whether it's required, and a
- * template page anchor for "Learn more".
+ * One row of the Finish setting up card. Fields mirror the App Pack content
+ * system: title, why, action, done when, required, learn more. Pack-specific
+ * ("works with") rows would set `packSpecific` and list their keys in `action`.
  */
 type ChecklistItem = {
   id: string
   title: string
   why: string
-  action: {
-    // Where to go in the Netlify dashboard, in words.
-    text: string
-    // Only linked on a real deploy; `/projects/~/…` needs a linked project.
-    href?: string
-    hrefLabel?: string
-    // Something to paste into a coding agent, shown in quotes.
-    prompts?: Array<string>
-  }
-  // `'manual'` = the app can't check it, so the admin ticks "I've done this".
-  // Manual rows never block the card from hiding.
-  done: boolean | 'manual'
+  // Paragraphs shown in order. A string is plain text; `{ prompt }` is an
+  // "Ask your agent" prompt, rendered in quotes.
+  action: Array<string | { prompt: string }>
+  // A dashboard link, only when the app knows it can open one (deployed).
+  link?: { label: string; href: string }
+  // What makes the row done, as a phrase ("Identity is on"). Manual rows
+  // say "Manual".
+  doneWhen: string
+  // `undefined` = the app cannot detect it, so it's manual: the admin ticks it.
+  done?: boolean
   required: boolean
-  learnMore: `#${string}`
+  // Template page anchor, e.g. `#before-you-share`.
+  learnMore: string
 }
 
 const listeners = new Set<() => void>()
@@ -55,7 +52,7 @@ function subscribe(onChange: () => void) {
   }
 }
 
-function read(key: string): string {
+function readStorage(key: string): string {
   try {
     return window.localStorage.getItem(key) ?? ''
   } catch {
@@ -63,63 +60,61 @@ function read(key: string): string {
   }
 }
 
-function write(key: string, value: string) {
+function writeStorage(key: string, value: string) {
   try {
     window.localStorage.setItem(key, value)
   } catch {
-    // Storage blocked (private mode, etc.) — the change still applies for
-    // this page view.
+    // Storage blocked (private mode, etc.) — fall through so the checklist
+    // still updates for this page view.
   }
   listeners.forEach((listener) => listener())
 }
 
-function parseTicks(raw: string): Array<string> {
+const readDismissed = () => readStorage(DISMISS_KEY) === 'true'
+const readManualRaw = () => readStorage(MANUAL_KEY)
+
+function parseManual(raw: string): Set<string> {
   try {
-    const value: unknown = JSON.parse(raw)
-    return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : []
+    const parsed: unknown = JSON.parse(raw || '[]')
+    return new Set(Array.isArray(parsed) ? parsed.filter((id) => typeof id === 'string') : [])
   } catch {
-    return []
+    return new Set()
   }
 }
 
+function setManualDone(id: string, done: boolean) {
+  const ids = parseManual(readManualRaw())
+  if (done) ids.add(id)
+  else ids.delete(id)
+  writeStorage(MANUAL_KEY, JSON.stringify([...ids]))
+}
+
 /**
- * Admin-only "Finish setting up" card (see `SetupPrompt`). Hides itself once
- * every required row is done, and the X dismisses it for good via
- * localStorage.
+ * Admin-only Finish setting up card (see `SetupPrompt`). Hides itself once
+ * every required row is done; rows the app can't detect are ticked by hand
+ * and never block it. The X dismisses it for good via localStorage.
  */
 export function GoLiveChecklist() {
   const { authEnabled, deployed, user } = useAppContext()
-  // The server snapshot is "dismissed" so the card never flashes during SSR
+  // The server snapshot is `true` so the checklist never flashes during SSR
   // or hydration for someone who already dismissed it.
-  const dismissed =
-    useSyncExternalStore(
-      subscribe,
-      () => read(DISMISS_KEY),
-      () => 'true',
-    ) === 'true'
-  const ticked = parseTicks(
-    useSyncExternalStore(
-      subscribe,
-      () => read(MANUAL_KEY),
-      () => '',
-    ),
-  )
+  const dismissed = useSyncExternalStore(subscribe, readDismissed, () => true)
+  const manualRaw = useSyncExternalStore(subscribe, readManualRaw, () => '')
+  const manualDone = useMemo(() => parseManual(manualRaw), [manualRaw])
   const [dismissedForNow, setDismissedForNow] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
 
   const isAdmin = !!user?.roles.includes(appConfig.adminRole)
-  const link = (href: string, hrefLabel: string) => (deployed ? { href, hrefLabel } : {})
+  const identityLink = deployed ? { label: 'Open Identity settings', href: IDENTITY_SETTINGS_URL } : undefined
 
-  const items: Array<ChecklistItem> = [
+  const rows: Array<ChecklistItem> = [
     {
       id: 'visibility',
       title: 'Check who can open your app',
       why: 'Decide whether only your Netlify team, or anyone with the link, can load the app.',
-      action: {
-        text: 'Netlify dashboard: Project configuration, General, Visitor access, Project visibility.',
-        ...link(VISIBILITY_SETTINGS_URL, 'Open project settings'),
-      },
-      done: 'manual',
+      action: ['Netlify dashboard: Project configuration, General, Visitor access, Project visibility.'],
+      link: deployed ? { label: 'Open project visibility', href: VISIBILITY_SETTINGS_URL } : undefined,
+      doneWhen: 'Manual',
       required: false,
       learnMore: '#before-you-share',
     },
@@ -127,11 +122,9 @@ export function GoLiveChecklist() {
       id: 'signin',
       title: 'Turn on app sign-in (Netlify Identity)',
       why: 'Require people to log in to the app. This is separate from project visibility.',
-      action: {
-        text: 'Netlify dashboard: Identity, then enable it. First decide the default role for new signups.',
-        ...link(IDENTITY_SETTINGS_URL, 'Open Identity settings'),
-        prompts: ['Make the default role for new signups read-only.'],
-      },
+      action: ['Netlify dashboard: Identity, then enable it.'],
+      link: identityLink,
+      doneWhen: 'Identity is on',
       done: authEnabled,
       required: true,
       learnMore: '#before-you-share',
@@ -140,7 +133,9 @@ export function GoLiveChecklist() {
       id: 'admin',
       title: 'Make yourself the admin',
       why: 'The first person to sign up becomes the admin.',
-      action: { text: 'Sign up at /login before you share the link.' },
+      action: ['Sign up at /login before you share the link.'],
+      link: identityLink,
+      doneWhen: 'Identity is on and you hold the admin role',
       done: authEnabled && isAdmin,
       required: true,
       learnMore: '#before-you-share',
@@ -149,24 +144,27 @@ export function GoLiveChecklist() {
       id: 'domain',
       title: 'Choose who can sign up',
       why: 'Limit signups to one email domain, or invite people yourself.',
-      action: {
-        text: 'Or turn off open signups in Identity settings and invite people from the Identity tab.',
-        ...link(IDENTITY_SETTINGS_URL, 'Open Identity settings'),
-        prompts: ['Only allow people with an @acme.com email to sign up.'],
-      },
-      done: 'manual',
+      action: [
+        { prompt: 'Only allow people with an @acme.com email to sign up.' },
+        'Or turn off open signups in Identity settings and invite people from the Identity tab.',
+      ],
+      link: identityLink,
+      doneWhen: 'Manual',
       required: false,
       learnMore: '#before-you-share',
     },
   ]
+  // Manual rows have no `done` of their own; the admin's tick decides.
+  const items = rows.map((item) => ({
+    ...item,
+    manual: item.done === undefined,
+    done: item.done ?? manualDone.has(item.id),
+  }))
 
-  const isDone = (item: ChecklistItem) => (item.done === 'manual' ? ticked.includes(item.id) : item.done)
-  const allRequiredDone = items.every((item) => !item.required || isDone(item))
-  if (dismissed || dismissedForNow || allRequiredDone) return null
+  const requiredDone = items.filter((item) => item.required).every((item) => item.done)
+  if (dismissed || dismissedForNow || requiredDone) return null
 
   const openItem = items.find((item) => item.id === openId) ?? null
-  const toggleTick = (id: string) =>
-    write(MANUAL_KEY, JSON.stringify(ticked.includes(id) ? ticked.filter((t) => t !== id) : [...ticked, id]))
 
   return (
     <>
@@ -182,7 +180,7 @@ export function GoLiveChecklist() {
             aria-label="Dismiss setup checklist"
             onClick={() => {
               setDismissedForNow(true)
-              write(DISMISS_KEY, 'true')
+              writeStorage(DISMISS_KEY, 'true')
             }}
           >
             <X className="size-4" />
@@ -199,16 +197,16 @@ export function GoLiveChecklist() {
                 <span
                   className={cn(
                     'flex size-4 shrink-0 items-center justify-center rounded-full border',
-                    isDone(item) && 'border-primary bg-primary text-primary-foreground',
+                    item.done && 'border-primary bg-primary text-primary-foreground',
                   )}
                   aria-hidden="true"
                 >
-                  {isDone(item) ? <Check className="size-3" /> : null}
+                  {item.done ? <Check className="size-3" /> : null}
                 </span>
-                <span className={cn('flex-1', isDone(item) && 'text-muted-foreground line-through')}>
+                <span className={cn('flex-1', item.done && 'text-muted-foreground line-through')}>
                   {item.title}
-                  {item.required ? null : <span className="text-muted-foreground"> (optional)</span>}
                 </span>
+                {item.required ? null : <span className="text-xs text-muted-foreground">Optional</span>}
                 <ChevronRight className="size-4 text-muted-foreground" aria-hidden="true" />
               </button>
             </li>
@@ -223,38 +221,38 @@ export function GoLiveChecklist() {
               <DialogTitle>{openItem.title}</DialogTitle>
               <DialogDescription>{openItem.why}</DialogDescription>
             </DialogHeader>
-            <div className="space-y-3 text-sm text-muted-foreground">
-              {openItem.action.prompts?.map((prompt) => (
-                <AgentPrompt key={prompt} prompt={prompt} />
-              ))}
-              <p>{openItem.action.text}</p>
-              <a
-                href={`${appConfig.templatePageUrl}${openItem.learnMore}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
-              >
-                Learn more
-                <ExternalLink className="size-3.5" aria-hidden="true" />
-              </a>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              {openItem.action.map((part) =>
+                typeof part === 'string' ? (
+                  <p key={part}>{part}</p>
+                ) : (
+                  <p key={part.prompt}>
+                    Ask your agent: <span className="text-foreground">&ldquo;{part.prompt}&rdquo;</span>
+                  </p>
+                ),
+              )}
+              <p>Done when: {openItem.manual ? 'you tick it off yourself.' : `${openItem.doneWhen}.`}</p>
+              <p>
+                <a
+                  href={`${appConfig.templatePageUrl}${openItem.learnMore}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-foreground underline underline-offset-4"
+                >
+                  Learn more
+                </a>
+              </p>
             </div>
             <DialogFooter showCloseButton>
-              {openItem.done === 'manual' ? (
-                <Button variant="outline" onClick={() => toggleTick(openItem.id)}>
-                  {ticked.includes(openItem.id) ? (
-                    <>
-                      <Check className="size-4" aria-hidden="true" />
-                      Done
-                    </>
-                  ) : (
-                    "I've done this"
-                  )}
+              {openItem.manual ? (
+                <Button variant="outline" onClick={() => setManualDone(openItem.id, !openItem.done)}>
+                  {openItem.done ? 'Mark as not done' : "I've done this"}
                 </Button>
               ) : null}
-              {openItem.action.href ? (
+              {openItem.link ? (
                 <Button asChild>
-                  <a href={openItem.action.href} target="_blank" rel="noreferrer">
-                    {openItem.action.hrefLabel}
+                  <a href={openItem.link.href} target="_blank" rel="noreferrer">
+                    {openItem.link.label}
                   </a>
                 </Button>
               ) : null}
@@ -263,28 +261,5 @@ export function GoLiveChecklist() {
         ) : null}
       </Dialog>
     </>
-  )
-}
-
-function AgentPrompt({ prompt }: { prompt: string }) {
-  const [copied, setCopied] = useState(false)
-
-  return (
-    <div className="rounded-md border bg-muted/50 p-3">
-      <div className="mb-1 flex items-center justify-between">
-        <span className="text-xs font-medium text-foreground">Ask your agent</span>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Copy prompt"
-          onClick={() => {
-            void navigator.clipboard?.writeText(prompt).then(() => setCopied(true))
-          }}
-        >
-          {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-        </Button>
-      </div>
-      <p className="text-foreground">“{prompt}”</p>
-    </div>
   )
 }
