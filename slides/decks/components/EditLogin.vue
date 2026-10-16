@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AuthProvider } from '@netlify/identity'
 import { computed, ref, watch } from 'vue'
-import { editError, friendlyAuthError, identitySettings, logIn, logInWith, loginMode, loginNotice, loginOpen, sendPasswordReset, setPassword, signUp } from '../edits'
+import { editError, friendlyAuthError, identitySettings, logIn, logInWith, loginMode, loginNotice, loginOpen, MIN_PASSWORD_LENGTH, PASSWORD_TOO_SHORT_MESSAGE, sendPasswordReset, setPassword, signUp } from '../edits'
 
 const PROVIDER_LABELS: Record<AuthProvider, string> = {
   google: 'Google',
@@ -57,6 +57,8 @@ async function submit() {
   busy.value = true
   error.value = ''
   try {
+    if ((loginMode.value === 'signup' || settingPassword.value) && password.value.length < MIN_PASSWORD_LENGTH)
+      throw new Error(PASSWORD_TOO_SHORT_MESSAGE)
     if (loginMode.value === 'signup') {
       await signUp(email.value, password.value)
     }
@@ -114,8 +116,8 @@ function close() {
 
         <template v-if="settingPassword">
           <p>{{ loginMode === 'invite' ? 'Set a password to finish creating your account.' : 'Enter a new password for your account.' }}</p>
-          <label>New password<input v-model="password" type="password" autocomplete="new-password" minlength="8" required autofocus></label>
-          <label>Confirm password<input v-model="confirmPassword" type="password" autocomplete="new-password" minlength="8" required></label>
+          <label>New password<input v-model="password" type="password" autocomplete="new-password" required autofocus></label>
+          <label>Confirm password<input v-model="confirmPassword" type="password" autocomplete="new-password" required></label>
         </template>
 
         <template v-else-if="loginMode === 'forgot'">
@@ -148,7 +150,6 @@ function close() {
               <input
                 id="deck-login-password" v-model="password" type="password" required
                 :autocomplete="loginMode === 'login' ? 'current-password' : 'new-password'"
-                :minlength="loginMode === 'signup' ? 8 : undefined"
               >
             </div>
           </template>

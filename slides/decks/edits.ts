@@ -186,12 +186,40 @@ async function finishAuthLink() {
   }
 }
 
+/** Checked in the dialog before any request is made, rather than the browser's `minlength`,
+ *  which shows a native popup and can't carry our wording. Login doesn't check it: an existing
+ *  account may predate the rule. */
+export const MIN_PASSWORD_LENGTH = 8
+export const PASSWORD_TOO_SHORT_MESSAGE = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`
+
+const MAX_DETAIL_LENGTH = 200
+
+function asText(value: unknown): string {
+  return typeof value === 'string' ? value.trim().slice(0, MAX_DETAIL_LENGTH) : ''
+}
+
+/** Best available message and HTTP status for an auth error. `@netlify/identity` wraps the
+ *  gotrue-js error, which often has an empty `message` (the status text is blank over HTTP/2)
+ *  and keeps the useful parts on `status` and `json`, so this looks through `cause`. */
+function describeAuthError(error: unknown): { message: string, status?: number } {
+  let message = ''
+  let status: number | undefined
+  let current: unknown = error
+  for (let depth = 0; depth < 4 && current && typeof current === 'object'; depth++) {
+    const e = current as { message?: unknown, status?: unknown, json?: Record<string, unknown> | null, cause?: unknown }
+    if (status === undefined && typeof e.status === 'number')
+      status = e.status
+    // The server's own words win over the library's, which may just be the status text.
+    message ||= asText(e.json?.msg) || asText(e.json?.message) || asText(e.json?.error_description) || asText(e.json?.error) || asText(e.message)
+    current = e.cause
+  }
+  return { message, status }
+}
+
 /** Plain-language messages for the Identity failures people hit. Identity's wording isn't a
  *  stable contract, so this matches loosely and falls back to the original message. */
 export function friendlyAuthError(error: unknown, mode: LoginMode): string {
-  const message = error instanceof Error ? error.message : ''
-  if (!message)
-    return 'Something went wrong. Try again.'
+  const { message, status } = describeAuthError(error)
   if (/not confirmed|confirm your email|unconfirmed/i.test(message))
     return 'Confirm your email first. Use the link we sent when you signed up.'
   if (/signups? (are |is )?(not allowed|disabled)|signup.*disabled/i.test(message))
@@ -200,7 +228,25 @@ export function friendlyAuthError(error: unknown, mode: LoginMode): string {
     return 'An account with that email already exists. Log in instead.'
   if (mode === 'login' && /invalid (login )?credentials|invalid.*(email|password)|password invalid|no user found|incorrect/i.test(message))
     return 'Email or password is incorrect.'
-  return message
+  const networkFailure = /^(failed to fetch|load failed|networkerror)/i.test(message)
+  if (message && !networkFailure)
+    return message
+
+  // No usable message: fall back on what the status and the dialog say.
+  if (networkFailure)
+    return 'We couldn\'t reach the sign-in service. Check your connection and try again.'
+  if (!status)
+    return 'Something went wrong. Try again.'
+  if (status === 429)
+    return 'Too many attempts. Wait a minute and try again.'
+  if (mode === 'signup' && (status === 400 || status === 403 || status === 422))
+    return `Sign-up was refused (error ${status}). This site may only allow certain email domains, or sign-up by invitation. Ask for an invite.`
+  if (status >= 500) {
+    return mode === 'signup'
+      ? `Sign-up failed on the server (error ${status}). Try again in a moment. If it keeps happening, the site owner should check the Identity function's logs.`
+      : `The sign-in service had a problem (error ${status}). Try again in a moment.`
+  }
+  return `Something went wrong (error ${status}). Try again.`
 }
 
 export async function logIn(email: string, password: string) {
