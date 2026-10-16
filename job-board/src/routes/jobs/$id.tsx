@@ -4,14 +4,12 @@ import { ArrowLeft, CheckCircle2, MapPin, UploadCloud } from 'lucide-react'
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from 'app-packs-ui'
 import { getPublicJobServer, submitApplicationServer } from '@/server/recruiting'
 import { useSubmission } from '@/lib/submission'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 export const Route = createFileRoute('/jobs/$id')({
   loader: ({ params }) => getPublicJobServer({ data: { id: params.id } }),
   component: JobDetail,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load role'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'this role')} />,
 })
 const lines = (s: string) => s.split('\n').filter(Boolean)
 function JobDetail() {

@@ -5,7 +5,6 @@ import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
 import { ModeToggle } from '@/components/mode-toggle'
 import { SetupPrompt } from '@/components/setup-prompt'
-import { IdentityOffBanner } from '@/components/identity-off-banner'
 import { UserMenu } from '@/components/user-menu'
 import { Badge, Button } from 'app-packs-ui'
 import {
@@ -56,15 +55,15 @@ export function AppShell({ children }: { children: ReactNode }) {
         Skip to main content
       </a>
       <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:gap-6">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-6 sm:px-4">
           <Link
             to="/"
-            className="flex items-center gap-2 rounded-md font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="flex min-w-0 items-center gap-2 rounded-md font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             {/* width/height keep the logo 28px even if the stylesheet hasn't applied
               yet (the SVG has no intrinsic size and would fill its container). */}
-            <img src={appConfig.logo.src} alt="" width={28} height={28} className="size-7" />
-            <span className="whitespace-nowrap">{appConfig.productName}</span>
+            <img src={appConfig.logo.src} alt="" width={28} height={28} className="size-7 shrink-0" />
+            <span className="truncate whitespace-nowrap">{appConfig.productName}</span>
           </Link>
 
           <nav aria-label="Main" className="hidden items-center gap-1 text-sm lg:flex">
@@ -75,7 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
             {showAbout ? (
               <Button asChild variant="outline" size="small" className="hidden lg:inline-flex">
                 <Link to="/about">About this app</Link>
@@ -140,8 +139,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-
-      <IdentityOffBanner />
 
       <main
         id="main-content"

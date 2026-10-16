@@ -9,7 +9,7 @@ import { listSurveys } from '@/data/surveys'
 import { DataTable, type DataTableColumn } from '@/components/data-table/data-table'
 import { DataTableColumnHeader } from '@/components/data-table/column-header'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 type ResponseRow = {
   id: string
@@ -40,9 +40,7 @@ const listResponsesWithSurveyServer = createServerFn({ method: 'GET' }).handler(
 export const Route = createFileRoute('/_app/admin/responses/')({
   loader: () => listResponsesWithSurveyServer(),
   pendingComponent: () => <LoadingState variant="table" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load responses'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'responses')} />,
   component: ResponsesPage,
 })
 

@@ -6,16 +6,14 @@ import { getLearnerOverviewServer } from '@/server/learning'
 import { appConfig } from '@/config/app'
 import { CourseCard } from '@/components/learning/course-card'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/_app/courses/')({
   loader: () => getLearnerOverviewServer(),
   head: () => ({ meta: [{ title: `Course catalog · ${appConfig.productName}` }] }),
   pendingComponent: () => <LoadingState variant="card" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load courses'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'courses')} />,
   component: CatalogPage,
 })
 

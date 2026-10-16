@@ -26,10 +26,12 @@ const officialDemoSiteNames = new Set(['app-pack-template'])
 /**
  * True on a real Netlify deploy (production, previews, branch deploys), false
  * on a laptop — including `netlify dev` when the repo is linked to a site,
- * which sets `SITE_ID` too.
+ * which sets `SITE_ID` too, and `vite dev`, where the Netlify Vite plugin
+ * loads the linked site's environment (`SITE_ID` included) into the process.
  */
 export function isDeployed(): boolean {
   if (process.env.NETLIFY_DEV === 'true') return false
+  if (process.env.NODE_ENV === 'development') return false
   return !!(process.env.SITE_ID ?? process.env.NETLIFY_SITE_ID ?? process.env.SITE_NAME)
 }
 

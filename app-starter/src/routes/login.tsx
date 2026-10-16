@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { Alert, AlertDescription, AlertTitle, Button } from 'app-packs-ui'
+import { Button } from 'app-packs-ui'
 import { LoginForm } from '@/auth/client'
 import { useAppContext } from '@/server/context'
 import { IDENTITY_SETTINGS_URL } from '@/lib/dashboard-links'
@@ -44,16 +44,11 @@ function SignInOffNotice() {
           app.
         </p>
       </div>
-      <Alert variant="accent">
-        <AlertTitle>To turn it on</AlertTitle>
-        <AlertDescription>
-          <ol className="list-decimal space-y-1 pl-5">
-            <li>In the Netlify dashboard, open Identity and enable it.</li>
-            <li>Come back here in about a minute. No redeploy needed.</li>
-            <li>Sign up. The first person to sign up becomes the admin.</li>
-          </ol>
-        </AlertDescription>
-      </Alert>
+      <ol className="list-decimal space-y-1 pl-5 text-sm">
+        <li>In the Netlify dashboard, open Identity and enable it.</li>
+        <li>Come back here in about a minute. No redeploy needed.</li>
+        <li>Sign up. The first person to sign up becomes the admin.</li>
+      </ol>
       <Button asChild className="w-full">
         <a href={IDENTITY_SETTINGS_URL} target="_blank" rel="noopener noreferrer">
           Open Identity settings

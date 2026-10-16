@@ -6,7 +6,7 @@ import { appConfig } from '@/config/app'
 import { Badge, Card, CardContent, CardHeader, CardTitle, EmptyState } from 'app-packs-ui'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 // Route-local server fn (not shared elsewhere, so it lives next to the one
 // route that uses it rather than in src/server/). `requireRole([appConfig.adminRole])`
@@ -19,9 +19,7 @@ const listAuditServer = createServerFn({ method: 'GET' }).handler(async () => {
 export const Route = createFileRoute('/_app/admin/audit')({
   loader: () => listAuditServer(),
   pendingComponent: () => <LoadingState variant="table" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load audit log'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'the audit log')} />,
   component: AuditPage,
 })
 

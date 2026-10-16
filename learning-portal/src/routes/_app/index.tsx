@@ -9,7 +9,7 @@ import { ProgressBar } from '@/components/learning/progress-bar'
 import { CourseCard } from '@/components/learning/course-card'
 import { formatMinutes, percent } from '@/components/learning/format'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 // Loader goes through the createServerFn wrapper (src/server/learning.ts),
 // never src/data/*.ts directly — see AGENTS.md.
@@ -17,9 +17,7 @@ export const Route = createFileRoute('/_app/')({
   loader: () => getLearnerOverviewServer(),
   head: () => ({ meta: [{ title: `My learning · ${appConfig.productName}` }] }),
   pendingComponent: () => <LoadingState variant="card" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load your learning'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'your learning')} />,
   component: Dashboard,
 })
 

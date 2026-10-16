@@ -4,15 +4,13 @@ import { ArrowRight, BriefcaseBusiness, Building2, MapPin, Search } from 'lucide
 import { Badge, Card, CardContent, EmptyState } from 'app-packs-ui'
 import { listPublicJobsServer } from '@/server/recruiting'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 import { appConfig } from '@/config/app'
 
 export const Route = createFileRoute('/')({
   loader: () => listPublicJobsServer(),
   pendingComponent: () => <LoadingState variant="card" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load open roles'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'open roles')} />,
   component: JobBoard,
 })
 function JobBoard() {

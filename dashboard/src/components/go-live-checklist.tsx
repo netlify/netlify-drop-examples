@@ -1,5 +1,5 @@
 import { useMemo, useState, useSyncExternalStore } from 'react'
-import { Check, ChevronRight, X } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, ListChecks, X } from 'lucide-react'
 import { Button } from 'app-packs-ui'
 import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
@@ -104,21 +104,14 @@ export function GoLiveChecklist() {
   const manualDone = useMemo(() => parseManual(manualRaw), [manualRaw])
   const [dismissedForNow, setDismissedForNow] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
+  // Phones start with a small pill so the card doesn't cover the page; from
+  // `sm` up the card is always open and this state is ignored.
+  const [expanded, setExpanded] = useState(false)
 
   const identityLink = deployed ? { label: 'Open Identity settings', href: IDENTITY_SETTINGS_URL } : undefined
   const envLink = deployed ? { label: 'Open environment variables', href: ENV_SETTINGS_URL } : undefined
 
   const rows: Array<ChecklistItem> = [
-    {
-      id: 'visibility',
-      title: 'Check who can open your app',
-      why: 'Decide whether only your Netlify team, or anyone with the link, can load the app.',
-      action: ['Netlify dashboard: Project configuration, General, Visitor access, Project visibility.'],
-      link: deployed ? { label: 'Open project visibility', href: VISIBILITY_SETTINGS_URL } : undefined,
-      doneWhen: 'Manual',
-      required: false,
-      learnMore: '#before-you-share',
-    },
     {
       id: 'encryption',
       title: 'Set the data encryption key',
@@ -174,6 +167,16 @@ export function GoLiveChecklist() {
       required: false,
       learnMore: '#connect-your-data',
     },
+    {
+      id: 'visibility',
+      title: 'Check who can open your app',
+      why: 'Decide whether only your Netlify team, or anyone with the link, can load the app.',
+      action: ['Netlify dashboard: Project configuration, General, Visitor access, Project visibility.'],
+      link: deployed ? { label: 'Open project visibility', href: VISIBILITY_SETTINGS_URL } : undefined,
+      doneWhen: 'Manual',
+      required: false,
+      learnMore: '#before-you-share',
+    },
   ]
   // Manual rows have no `done` of their own; the admin's tick decides.
   const items = rows.map((item) => ({
@@ -189,23 +192,52 @@ export function GoLiveChecklist() {
 
   return (
     <>
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        className={cn(
+          'fixed right-4 bottom-4 z-40 inline-flex min-h-11 items-center gap-2 rounded-full border bg-card px-4 text-sm font-medium text-card-foreground shadow-lg sm:hidden',
+          expanded && 'hidden',
+        )}
+      >
+        <ListChecks className="size-4" aria-hidden="true" />
+        Finish setting up
+        <span className="text-muted-foreground">
+          {items.filter((item) => item.done).length}/{items.length}
+        </span>
+      </button>
       <aside
         aria-label="Setup checklist"
-        className="fixed right-4 bottom-4 z-40 w-72 max-w-[calc(100vw-2rem)] rounded-xl border bg-card p-3 text-card-foreground shadow-lg"
+        className={cn(
+          'fixed right-4 bottom-4 z-40 w-72 max-w-[calc(100vw-2rem)] rounded-xl border bg-card p-3 text-card-foreground shadow-lg',
+          !expanded && 'max-sm:hidden',
+        )}
       >
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold">Finish setting up</h2>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Dismiss setup checklist"
-            onClick={() => {
-              setDismissedForNow(true)
-              writeStorage(DISMISS_KEY, 'true')
-            }}
-          >
-            <X className="size-4" />
-          </Button>
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Minimize setup checklist"
+              className="max-sm:size-10 sm:hidden"
+              onClick={() => setExpanded(false)}
+            >
+              <ChevronDown className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Dismiss setup checklist"
+              className="max-sm:size-10"
+              onClick={() => {
+                setDismissedForNow(true)
+                writeStorage(DISMISS_KEY, 'true')
+              }}
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
         </div>
         <ul className="space-y-1">
           {items.map((item) => (
@@ -213,7 +245,7 @@ export function GoLiveChecklist() {
               <button
                 type="button"
                 onClick={() => setOpenId(item.id)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted max-sm:min-h-11"
               >
                 <span
                   className={cn(
@@ -237,7 +269,7 @@ export function GoLiveChecklist() {
 
       <Dialog open={openItem !== null} onOpenChange={(open) => !open && setOpenId(null)}>
         {openItem ? (
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>{openItem.title}</DialogTitle>
               <DialogDescription>{openItem.why}</DialogDescription>
@@ -264,14 +296,14 @@ export function GoLiveChecklist() {
                 </a>
               </p>
             </div>
-            <DialogFooter showCloseButton>
+            <DialogFooter showCloseButton className="flex-col sm:flex-row">
               {openItem.manual ? (
                 <Button variant="outline" onClick={() => setManualDone(openItem.id, !openItem.done)}>
                   {openItem.done ? 'Mark as not done' : "I've done this"}
                 </Button>
               ) : null}
               {openItem.link ? (
-                <Button asChild>
+                <Button asChild className="max-sm:order-first">
                   <a href={openItem.link.href} target="_blank" rel="noreferrer">
                     {openItem.link.label}
                   </a>

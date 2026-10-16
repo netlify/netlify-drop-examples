@@ -13,13 +13,11 @@ import {
 } from '@/server/recruiting'
 import type { ApplicationNote } from '@/db/schema'
 import { ConfirmDelete } from '@/components/confirm-delete'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 import { useSubmission } from '@/lib/submission'
 export const Route = createFileRoute('/_app/recruiting/applications/$id')({
   loader: ({ params }) => getApplicationServer({ data: { id: params.id } }),
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load application'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'this application')} />,
   component: ApplicationDetail,
 })
 function ApplicationDetail() {

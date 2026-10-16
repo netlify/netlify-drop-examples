@@ -5,7 +5,7 @@ import { appConfig } from '@/config/app'
 import type { SurveyRow } from '@/db/schema'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, EmptyState } from 'app-packs-ui'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 type HomeData = { isAdmin: true; surveys: Array<SurveyRow> } | { isAdmin: false }
 
@@ -26,9 +26,7 @@ export const Route = createFileRoute('/')({
     return { isAdmin: true, surveys }
   },
   pendingComponent: () => <LoadingState variant="card" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load home'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'the home page')} />,
   component: Home,
 })
 

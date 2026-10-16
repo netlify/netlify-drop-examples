@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
+import { Info } from 'lucide-react'
 import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
 import { ModeToggle } from '@/components/mode-toggle'
 import { UserMenu } from '@/components/user-menu'
 import { SetupPrompt } from '@/components/setup-prompt'
-import { IdentityOffBanner } from '@/components/identity-off-banner'
 import { Button } from 'app-packs-ui'
 import { cn } from '@/lib/utils'
 
@@ -22,13 +22,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-svh flex-col">
       <header className="border-b">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:gap-6">
-          <Link to="/" className="flex items-center gap-2 font-semibold">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-6 sm:px-4">
+          <Link to="/" className="flex shrink-0 items-center gap-2 font-semibold">
             <img src={appConfig.logo.src} alt={appConfig.logo.alt} className="size-6" />
             <span className="hidden sm:inline">{appConfig.productName}</span>
           </Link>
 
-          <nav className="flex items-center gap-3 text-sm text-muted-foreground sm:gap-4">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground sm:gap-4">
             {appConfig.nav.primary.map((item) => (
               <Link
                 key={item.to}
@@ -41,11 +41,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-1 sm:gap-3">
+          <div className="ml-auto flex items-center sm:gap-3">
             {showAbout ? (
-              <Button asChild variant="outline" size="small">
+              <Button asChild variant="outline" size="small" className="max-sm:px-2.5">
                 <Link to="/about">
-                  <span className="sm:hidden">About</span>
+                  <Info className="size-4 min-[360px]:hidden" aria-hidden="true" />
+                  <span className="max-[359px]:sr-only sm:hidden">About</span>
                   <span className="hidden sm:inline">About this app</span>
                 </Link>
               </Button>
@@ -69,8 +70,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-
-      <IdentityOffBanner />
 
       <main className={cn('mx-auto w-full max-w-6xl flex-1 px-4 py-8 pb-36')}>{children}</main>
       <SetupPrompt />

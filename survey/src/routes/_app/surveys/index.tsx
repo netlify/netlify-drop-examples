@@ -7,7 +7,7 @@ import { appConfig } from '@/config/app'
 import { listSurveys } from '@/data/surveys'
 import { getResponseForRespondent } from '@/data/survey-responses'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 type SurveyListRow = {
   id: string
@@ -47,9 +47,7 @@ const listSurveysForViewerServer = createServerFn({ method: 'GET' }).handler(asy
 export const Route = createFileRoute('/_app/surveys/')({
   loader: () => listSurveysForViewerServer(),
   pendingComponent: () => <LoadingState variant="card" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load surveys'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'surveys')} />,
   component: SurveysPage,
 })
 

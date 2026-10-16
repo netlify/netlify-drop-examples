@@ -27,7 +27,7 @@ apps. Read this before making changes.
   `app-shell.tsx` to remove it.
 - **Branding lives in one file**: `src/config/app.ts`. If you're asked to
   rebrand the app, that's the only file that should change (plus swapping
-  `/public/logo.svg`).
+  `/public/logo.svg` and the 1200×630 link-preview image `/public/og.png`).
   The same file holds `packDescription` and `templatePageUrl`, which feed the
   About page and the checklist's "Learn more" links.
 - **Data layer pattern**: `src/data/<entity>.ts` has `if (isDemoMode())`

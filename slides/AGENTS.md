@@ -13,6 +13,8 @@ This repo is a Slidev deck template. It is not an app.
   `<DeckImg src="/screens/x.png" alt="..." />`, which adds the deck's base path.
   Shared files (`style.css`, `components/`, `setup/`, `public/`, the panel files)
   must stay in `decks/`: Slidev only reads them from the deck folder.
+  The home page's link-preview image is `decks/og.png` (1200×630);
+  `scripts/build-index.mjs` copies it to `dist/og.png`.
 - **Layout classes** are listed in `README.md`. Reuse them before adding new CSS.
 - **Slide panel** (thumbnail sidebar) lives in `decks/global-top.vue`, with its
   state in `decks/sidebar.ts` and the `b` shortcut in `decks/setup/shortcuts.ts`. Its styles are at the end of `style.css`. It imports

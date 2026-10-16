@@ -6,14 +6,12 @@ import { DataTable, type DataTableColumn } from '@/components/data-table/data-ta
 import { DataTableColumnHeader } from '@/components/data-table/column-header'
 import { Button, EmptyState } from 'app-packs-ui'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 export const Route = createFileRoute('/_app/admin/surveys/')({
   loader: () => listSurveysServer(),
   pendingComponent: () => <LoadingState variant="table" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load surveys'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'your surveys')} />,
   component: SurveysPage,
 })
 

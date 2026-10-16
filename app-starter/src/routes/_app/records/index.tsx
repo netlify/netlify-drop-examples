@@ -6,14 +6,12 @@ import { DataTable, type DataTableColumn } from '@/components/data-table/data-ta
 import { DataTableColumnHeader } from '@/components/data-table/column-header'
 import { Button, Badge, EmptyState } from 'app-packs-ui'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 export const Route = createFileRoute('/_app/records/')({
   loader: () => listRecordsServer(),
   pendingComponent: () => <LoadingState variant="table" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load records'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'your records')} />,
   component: RecordsPage,
 })
 

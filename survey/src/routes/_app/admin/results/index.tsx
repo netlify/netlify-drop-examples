@@ -7,7 +7,7 @@ import { appConfig } from '@/config/app'
 import { listSurveys } from '@/data/surveys'
 import { listResponsesForSurvey } from '@/data/survey-responses'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 const listSurveyResultsSummaryServer = createServerFn({ method: 'GET' }).handler(async () => {
   await requireRole([appConfig.adminRole])
@@ -25,9 +25,7 @@ const listSurveyResultsSummaryServer = createServerFn({ method: 'GET' }).handler
 export const Route = createFileRoute('/_app/admin/results/')({
   loader: () => listSurveyResultsSummaryServer(),
   pendingComponent: () => <LoadingState variant="card" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load results'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'survey results')} />,
   component: ResultsOverviewPage,
 })
 

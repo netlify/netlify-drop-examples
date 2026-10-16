@@ -38,7 +38,7 @@ export function UserMenu() {
         <Button variant="ghost" size="small" aria-label="Account menu" className="gap-1.5">
           <CircleUser className="size-4 sm:hidden" aria-hidden="true" />
           <span className="hidden max-w-48 truncate text-muted-foreground sm:inline">{label}</span>
-          <ChevronDown className="size-3.5 text-muted-foreground" aria-hidden="true" />
+          <ChevronDown className="hidden size-3.5 text-muted-foreground sm:block" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

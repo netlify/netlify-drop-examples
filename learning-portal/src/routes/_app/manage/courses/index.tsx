@@ -6,15 +6,13 @@ import { appConfig } from '@/config/app'
 import { CourseIcon } from '@/components/learning/course-icon'
 import { DurationPill, StatusPill } from '@/components/learning/badges'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 
 export const Route = createFileRoute('/_app/manage/courses/')({
   loader: () => listManagedCoursesServer(),
   head: () => ({ meta: [{ title: `Manage courses · ${appConfig.productName}` }] }),
   pendingComponent: () => <LoadingState variant="table" />,
-  errorComponent: ({ error }) => (
-    <ErrorState message={error instanceof Error ? error.message : 'Failed to load courses'} />
-  ),
+  errorComponent: ({ error }) => <ErrorState {...friendlyError(error, 'courses')} />,
   component: ManageCoursesPage,
 })
 

@@ -20,15 +20,22 @@ import { appConfig } from '@/config/app'
  * True on a real Netlify deploy (production, previews, branch deploys), false
  * on a laptop — including when the repo (or any folder above it) is linked to
  * a site, which sets `SITE_ID` too. `netlify dev` marks that with
- * `NETLIFY_DEV`; plain `npm run dev` (the Netlify Vite plugin) only sets
- * `NETLIFY_LOCAL`, so both are checked.
+ * `NETLIFY_DEV`; plain `npm run dev` (the Netlify Vite plugin) sets
+ * `NETLIFY_LOCAL` and loads the linked site's environment (`SITE_ID`
+ * included), and `NODE_ENV` is `development` under vite dev as a backstop,
+ * so all three are checked.
  *
- * Only `SITE_ID` (and those two local markers) work here. `CONTEXT` and
+ * Only `SITE_ID` (and those local markers) work here. `CONTEXT` and
  * `NETLIFY` are build-time-only variables and are undefined inside the
  * deployed function.
  */
 export function isDeployed(): boolean {
-  return !!process.env.SITE_ID && process.env.NETLIFY_DEV !== 'true' && process.env.NETLIFY_LOCAL !== 'true'
+  return (
+    !!process.env.SITE_ID &&
+    process.env.NETLIFY_DEV !== 'true' &&
+    process.env.NETLIFY_LOCAL !== 'true' &&
+    process.env.NODE_ENV !== 'development'
+  )
 }
 
 /** True only on the canonical public demo project (`appConfig.officialDemoSiteId`). */

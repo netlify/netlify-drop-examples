@@ -16,7 +16,7 @@ import {
 } from 'app-packs-ui'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { LoadingState } from '@/components/states/loading-state'
-import { ErrorState } from '@/components/states/error-state'
+import { ErrorState, friendlyError } from '@/components/states/error-state'
 import { dashboardConfig } from '@/config/dashboard'
 import { appConfig } from '@/config/app'
 import { useAppContext } from '@/server/context'
@@ -32,17 +32,15 @@ export const Route = createFileRoute('/_app/data')({
   // `getDataPageServer` enforces the editor/admin roles; viewers get the 403 state below.
   loader: () => getDataPageServer(),
   pendingComponent: () => <LoadingState variant="card" />,
-  errorComponent: ({ error }) => {
-    const message = error instanceof Error ? error.message : 'Failed to load the data page'
-    return message.startsWith('403') ? (
+  errorComponent: ({ error }) =>
+    error instanceof Error && error.message.startsWith('403') ? (
       <ErrorState
         title="Not allowed"
         message={`Loading data is limited to ${appConfig.dataEditorRoles.join(' and ')} roles.`}
       />
     ) : (
-      <ErrorState message={message} />
-    )
-  },
+      <ErrorState {...friendlyError(error, 'the data page')} />
+    ),
   component: DataPage,
 })
 
