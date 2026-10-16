@@ -19,7 +19,7 @@ import { Field, FieldLabel, FieldError, FieldGroup } from '@/components/ui/field
 import { Separator } from '@/components/ui/separator'
 import { useSubmission } from '@/lib/submission'
 import { needsFirstAdminServer } from '@/server/first-user'
-import { friendlyAuthError } from '@/auth/errors'
+import { friendlyAuthError, MIN_PASSWORD_LENGTH, PASSWORD_TOO_SHORT_MESSAGE } from '@/auth/errors'
 import { IDENTITY_SETTINGS_URL } from '@/lib/dashboard-links'
 
 /**
@@ -164,6 +164,9 @@ export function LoginForm() {
   }, [])
 
   const { state, run } = useSubmission(async () => {
+    if (mode === 'signup' && password.length < MIN_PASSWORD_LENGTH) {
+      throw new Error(PASSWORD_TOO_SHORT_MESSAGE)
+    }
     try {
       const user = mode === 'login' ? await login(email, password) : await signup(email, password)
       // With email confirmation on, signup() sends a link and sets no
@@ -382,7 +385,6 @@ export function LoginForm() {
                 type="password"
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 required
-                minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -447,6 +449,9 @@ export function ResetPasswordForm() {
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const { state, run } = useSubmission(async () => {
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      throw new Error(PASSWORD_TOO_SHORT_MESSAGE)
+    }
     if (password !== confirmPassword) {
       throw new Error('Passwords do not match.')
     }
@@ -490,7 +495,6 @@ export function ResetPasswordForm() {
               type="password"
               autoComplete="new-password"
               required
-              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -502,7 +506,6 @@ export function ResetPasswordForm() {
               type="password"
               autoComplete="new-password"
               required
-              minLength={8}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
