@@ -42,6 +42,8 @@ apps. Read this before making changes.
 - **Branding lives in one file**: `src/config/app.ts`. If you're asked to
   rebrand the app, that's the only file that should change (plus swapping
   `/public/logo.svg`).
+  The same file holds `packDescription` and `templatePageUrl`, which feed the
+  About page and the checklist's "Learn more" links.
 - **Data layer pattern**: `src/data/<entity>.ts` has `if (isDemoMode())`
   branches inline — no interface + two implementations. To add an entity,
   copy `src/data/surveys.ts`'s shape.

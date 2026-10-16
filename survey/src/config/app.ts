@@ -23,6 +23,14 @@ export const appConfig = {
   // hosted demo, delete this, `isOfficialDemoSite()` in
   // `src/config/flags.ts`, and `netlify-deploy-badge.tsx`.
   officialDemoSiteId: 'fd335b1f-975f-4dc4-b929-166671d26c6a',
+  // Completes "This is a starting point for ..." on the About page (demo site
+  // only). Describe what the pack does for the team, lowercase, no full stop.
+  packDescription:
+    'running internal HR surveys, with pulse check-ins, results dashboards, sign-in, role-based permissions and an audit log',
+  // This pack's page on netlify.com/templates. The About page links to it and
+  // every Finish setting up row's "Learn more" points at one of its anchors
+  // (#before-you-share, #works-with-[service]). To confirm: the live slug.
+  templatePageUrl: 'https://www.netlify.com/templates/hr-survey',
   logo: {
     // Path relative to /public. Swap the file and keep the same path, or
     // change the path here. Still the base template's placeholder mark —
@@ -45,8 +53,8 @@ export const appConfig = {
   nav: {
     primary: [
       { label: 'Surveys', to: '/surveys' as const },
-      { label: 'About', to: '/about' as const },
     ],
+    // Shown in the account menu (under the user's email) for `adminRole` only.
     admin: [
       { label: 'Manage surveys', to: '/admin/surveys' as const },
       { label: 'Responses', to: '/admin/responses' as const },
@@ -55,8 +63,8 @@ export const appConfig = {
       { label: 'Usage events', to: '/admin/events' as const },
     ],
   },
-  // The role required to see the built-in demo admin section (audit log,
-  // usage events) and its nav links above. This is the only hardcoded role
+  // The role required to see the built-in demo admin section (audit
+  // log, usage events) and its account-menu links above. This is the only hardcoded role
   // name in the base template — change it to whatever your vertical's
   // taxonomy calls its top role, or remove the admin section entirely. See
   // README > Roles for the generic RBAC mechanism this plugs into.

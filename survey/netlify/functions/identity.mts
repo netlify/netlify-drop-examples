@@ -1,21 +1,23 @@
 import type { UserSignupHandler } from '@netlify/functions'
 import { getDefaultRole, getAllowedSignupDomain } from '../../src/config/flags'
 import { appConfig } from '../../src/config/app'
-import { hasAnyUsers } from '../../src/auth/first-user'
+import { hasOtherConfirmedUser } from '../../src/auth/first-user'
 
 /**
- * Netlify Identity signup event hook. Assigns `DEFAULT_ROLE` to every new
- * user's `app_metadata.roles` at signup time, so a vertical never has to
+ * Netlify Identity signup event hook. Assigns `appConfig.defaultRole` to every
+ * new user's `app_metadata.roles` at signup time, so a vertical never has to
  * manually assign a starting role to every signup from the Identity
  * dashboard. Also enforces `ALLOWED_SIGNUP_DOMAIN`, if set — see
  * `getAllowedSignupDomain()` (`src/config/flags.ts`) for why that check is
- * optional rather than fail-loud like `DEFAULT_ROLE`.
+ * optional.
  *
  * The very first successful signup gets `appConfig.adminRole` instead of
- * `DEFAULT_ROLE` (see `hasAnyUsers()`), so a non-technical person deploying
- * this template doesn't have to find Identity → Users → Roles in the Netlify
- * dashboard just to administer their own site. This has two windows worth
- * knowing about: two people signing up in the same instant could both read
+ * `appConfig.defaultRole` (see `hasOtherConfirmedUser()`), so a non-technical
+ * person deploying this template doesn't have to find Identity → Users →
+ * Roles in the Netlify dashboard just to administer their own site. With
+ * email confirmation on, this hook runs when the person confirms, so the
+ * first person to confirm is the admin. This has two windows worth knowing
+ * about: two people signing up in the same instant could both read
  * zero existing users and both become admin, and — on open signups — whoever
  * signs up first (not necessarily the deployer) claims it. README > Roles
  * tells deployers to sign up immediately after deploying, before sharing the
@@ -27,9 +29,9 @@ import { hasAnyUsers } from '../../src/auth/first-user'
  * `appMetadata` (the camelCase field name in this event payload, which maps
  * to `app_metadata` in the Identity API).
  *
- * Throws (via `getDefaultRole()`) if `DEFAULT_ROLE` isn't configured, which
- * fails the signup loudly rather than silently assigning a made-up role
- * name. See README > Roles.
+ * A role set here is in place for the user's first sign-in. Roles ride in
+ * the JWT, so any later change (Identity tab, `admin.updateUser()`) only takes
+ * effect on the user's next login or token refresh, not immediately.
  */
 const userSignup: UserSignupHandler = async (event) => {
   const allowedDomain = getAllowedSignupDomain()
@@ -42,10 +44,10 @@ const userSignup: UserSignupHandler = async (event) => {
 
   let alreadyHasUsers: boolean
   try {
-    alreadyHasUsers = await hasAnyUsers()
+    alreadyHasUsers = await hasOtherConfirmedUser(event.user.id)
   } catch {
     // If the admin API call fails for any reason, fail toward the safe
-    // default (a regular member) rather than risk granting admin on a
+    // default (the least-privileged role) rather than risk granting admin on a
     // read we couldn't actually confirm.
     alreadyHasUsers = true
   }

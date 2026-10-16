@@ -65,11 +65,69 @@ describe('SetupPrompt', () => {
     expect(screen.queryByRole('complementary', { name: 'Setup checklist' })).toBeNull()
   })
 
-  it('hides itself once every checkable row is done', () => {
+  it('hides itself once every required row is done', () => {
     setContext({ authEnabled: true, deployed: true, demoMode: false })
     const { container } = render(<SetupPrompt />)
 
     expect(container.innerHTML).toBe('')
+  })
+
+  it('has no Deploy row', () => {
+    render(<SetupPrompt />)
+
+    expect(screen.queryByRole('button', { name: /Deploy your app/ })).toBeNull()
+  })
+
+  it('lists the standard rows in order', () => {
+    render(<SetupPrompt />)
+    const titles = screen
+      .getAllByRole('button')
+      .map((button) => button.textContent ?? '')
+      .filter((text) => text && !text.includes('Dismiss'))
+
+    expect(titles).toEqual([
+      'Check who can open your appOptional',
+      'Turn on app sign-in (Netlify Identity)',
+      'Make yourself the admin',
+      'Choose who can sign upOptional',
+    ])
+  })
+
+  it('ticking a manual row never hides the card while a required row is open', () => {
+    setContext({ authEnabled: false })
+    render(<SetupPrompt />)
+    fireEvent.click(screen.getByRole('button', { name: /Check who can open your app/ }))
+    fireEvent.click(screen.getByRole('button', { name: "I've done this" }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0])
+
+    expect(screen.getByRole('complementary', { name: 'Setup checklist' })).toBeTruthy()
+  })
+
+  it('hides once the required rows are done even if manual rows are not ticked', () => {
+    setContext({ authEnabled: true })
+    const { container } = render(<SetupPrompt />)
+
+    expect(container.innerHTML).toBe('')
+  })
+
+  it('remembers a manual tick across reloads', () => {
+    const { unmount } = render(<SetupPrompt />)
+    fireEvent.click(screen.getByRole('button', { name: /Choose who can sign up/ }))
+    fireEvent.click(screen.getByRole('button', { name: "I've done this" }))
+    expect(screen.getByRole('button', { name: 'Mark as not done' })).toBeTruthy()
+
+    unmount()
+    render(<SetupPrompt />)
+    fireEvent.click(screen.getByRole('button', { name: /Choose who can sign up/ }))
+    expect(screen.getByRole('button', { name: 'Mark as not done' })).toBeTruthy()
+  })
+
+  it('points Learn more at the template page anchor', () => {
+    render(<SetupPrompt />)
+    fireEvent.click(screen.getByRole('button', { name: /Turn on app sign-in/ }))
+
+    const link = screen.getByRole('link', { name: 'Learn more' })
+    expect(link.getAttribute('href')).toBe(`${appConfig.templatePageUrl}#before-you-share`)
   })
 
   it('stays hidden once dismissed, including after a reload', () => {
@@ -87,17 +145,33 @@ describe('SetupPrompt', () => {
   it('links to Identity settings when deployed', () => {
     setContext({ deployed: true, demoMode: false })
     render(<SetupPrompt />)
-    fireEvent.click(screen.getByRole('button', { name: /Turn on sign-in/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Turn on app sign-in/ }))
 
     const link = screen.getByRole('link', { name: 'Open Identity settings' })
     expect(link.getAttribute('href')).toBe('https://app.netlify.com/projects/~/identity')
   })
 
-  it('has no Identity link when not deployed', () => {
+  it('links to project visibility when deployed', () => {
+    setContext({ deployed: true, demoMode: false })
     render(<SetupPrompt />)
-    for (const title of [/Turn on sign-in/, /Make yourself the admin/, /Choose who can sign up/]) {
+    fireEvent.click(screen.getByRole('button', { name: /Check who can open your app/ }))
+
+    const link = screen.getByRole('link', { name: 'Open project visibility' })
+    expect(link.getAttribute('href')).toBe(
+      'https://app.netlify.com/projects/~/configuration/general#project-visibility',
+    )
+  })
+
+  it('has no dashboard links when not deployed', () => {
+    render(<SetupPrompt />)
+    for (const title of [
+      /Check who can open your app/,
+      /Turn on app sign-in/,
+      /Make yourself the admin/,
+      /Choose who can sign up/,
+    ]) {
       fireEvent.click(screen.getByRole('button', { name: title }))
-      expect(screen.queryByRole('link', { name: 'Open Identity settings' })).toBeNull()
+      expect(screen.queryByRole('link', { name: /Open (Identity settings|project visibility)/ })).toBeNull()
       fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0])
     }
   })
