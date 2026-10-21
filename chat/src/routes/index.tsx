@@ -341,9 +341,9 @@ function Home() {
           <SidebarTrigger className="px-2">
             <PanelLeft className="size-4" />
           </SidebarTrigger>
-          <span className="truncate text-sm font-medium">
-            {currentConversation?.title ?? appConfig.productName}
-          </span>
+          {currentConversation ? (
+            <span className="truncate text-sm font-medium">{currentConversation.title}</span>
+          ) : null}
           <div className="ml-auto flex items-center gap-1">
             <ModeToggle />
             <Button
