@@ -21,6 +21,7 @@
     "postcss.config.ts",
     "public/favicon.svg",
     "public/netlify-monogram-darkmode.svg",
+    "public/og.png",
     "public/robots.txt",
     "public/site.webmanifest",
     "src/api.ts",
