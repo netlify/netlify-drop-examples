@@ -2,7 +2,7 @@
 
 Newt is a modern chat template built with TanStack Router and Claude AI integration features a clean and responsive interface.
 
-**⚡ View demo:** [https://tanstack-starter.netlify.app/](https://tanstack-starter.netlify.app/)
+**⚡ View demo:** [https://chat-app-pack.netlify.app/](https://chat-app-pack.netlify.app/)
 
 **Breaking Changes from Previous Versions:**
 - Migrated from Vinxi to Vite 7+ architecture
@@ -59,7 +59,7 @@ open the checklist; each row opens a short explanation with a dashboard link or
 an "Ask your agent" prompt. It is a UX nudge, not access control: it links to
 dashboard pages and exposes no data.
 
-- **On the official demo site** ([tanstack-starter.netlify.app](https://tanstack-starter.netlify.app/),
+- **On the official demo site** ([chat-app-pack.netlify.app](https://chat-app-pack.netlify.app/),
   `appConfig.officialDemoSiteId` in `src/config/app.ts`) a "Make this app
   yours" badge shows instead.
 - **Everywhere else, everyone sees it**, including local dev. The base App Pack
