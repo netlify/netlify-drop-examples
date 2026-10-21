@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# No ANTHROPIC_API_KEY needed: on Netlify, AI Gateway provides it. Set your own
+# key in the project's environment variables to bill your Anthropic account.

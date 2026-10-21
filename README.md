@@ -31,6 +31,7 @@ Either way you end up with a real, public site of your own.
 | [Dashboard](dashboard/)     | A read-only Pipeline & ARR dashboard: KPIs and charts from CSV, Snowflake or Salesforce data, on sample data with sign-in. Needs an account to build |
 | [Job board](job-board/)     | An HR job board: post open roles, take applications with resumes, and review candidates, on sample data with optional sign-in. Needs an account to build |
 | [Learning portal](learning-portal/) | An employee learning portal: publish short courses, track each person's progress, and follow the team's, on sample data with optional sign-in. Needs an account to build |
+| [Chat](chat/)               | Newt, an AI chat app: talk to Claude through Netlify AI Gateway with no API key, with custom system prompts and light/dark mode. Needs an account to build |
 
 More are on the way.
 

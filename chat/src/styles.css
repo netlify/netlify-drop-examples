@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import "tailwindcss";
+@import "highlight.js/styles/github-dark.css";
+
+/*
+ * Components come from `app-packs-ui` (loaded before this file in
+ * `__root.tsx`). Its `--ap-*` tokens are exposed to Tailwind below so custom
+ * UI (chat bubbles, markdown) stays on the same palette in light and dark.
+ *
+ * To rebrand, override the tokens here, e.g.:
+ *   :root { --ap-accent: #2f6f4e; --ap-accent-foreground: #fff; }
+ */
+
+/* `ThemeProvider attribute="class"` toggles `.dark` on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--ap-background);
+  --color-foreground: var(--ap-foreground);
+  --color-surface: var(--ap-surface);
+  --color-muted: var(--ap-muted);
+  --color-muted-foreground: var(--ap-muted-foreground);
+  --color-border: var(--ap-border);
+  --color-border-strong: var(--ap-border-strong);
+  --color-accent: var(--ap-accent);
+  --color-accent-foreground: var(--ap-accent-foreground);
+  --color-accent-subtle: var(--ap-accent-subtle);
+  --color-accent-subtle-foreground: var(--ap-accent-subtle-foreground);
+  --color-destructive: var(--ap-destructive);
+  --color-success: var(--ap-success);
+  --color-warning: var(--ap-warning);
+  --radius-ap: var(--ap-radius);
+}
+
+@layer base {
+  html {
+    @apply font-sans antialiased;
+  }
+  body {
+    @apply m-0 bg-background text-foreground;
+  }
+  code,
+  pre {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  }
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--ap-border-strong);
+  border-radius: 4px;
+}
+
+.messages-container {
+  scroll-behavior: smooth;
+}
+
+/* Markdown content styles */
+.prose {
+  max-width: none;
+  line-height: 1.65;
+  color: var(--ap-foreground);
+}
+
+.prose > * + * {
+  margin-top: 0.75em;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose strong {
+  font-weight: 600;
+  color: var(--ap-foreground);
+}
+
+.prose h1 {
+  font-size: 1.75em;
+  margin-bottom: 0.5em;
+}
+
+.prose h2 {
+  font-size: 1.4em;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.prose h3 {
+  font-size: 1.2em;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose ul,
+.prose ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+
+.prose ul {
+  list-style-type: disc;
+}
+
+.prose ol {
+  list-style-type: decimal;
+}
+
+.prose li {
+  margin: 0.35em 0;
+}
+
+.prose a {
+  color: var(--ap-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 0.1em;
+  text-underline-offset: 0.2em;
+}
+
+.prose a:hover {
+  text-decoration-thickness: 0.15em;
+}
+
+.prose code {
+  background-color: var(--ap-muted);
+  padding: 0.2em 0.4em;
+  border-radius: 0.375rem;
+  font-size: 0.875em;
+}
+
+/* Code blocks always use the dark highlight.js theme. */
+.prose pre {
+  background-color: #0d1117;
+  color: #e6edf3;
+  border: 1px solid var(--ap-border);
+  border-radius: var(--ap-radius);
+  padding: 1rem;
+  margin: 1em 0;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+}
+
+.prose pre code.hljs {
+  background: transparent;
+  padding: 0;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--ap-accent);
+  background-color: var(--ap-accent-subtle);
+  color: var(--ap-accent-subtle-foreground);
+  padding: 0.75em 1em;
+  margin: 1em 0;
+  border-radius: 0 var(--ap-radius) var(--ap-radius) 0;
+}
+
+.prose hr {
+  border-color: var(--ap-border);
+  margin: 2em 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--ap-border);
+  padding: 0.5em 0.75em;
+}
+
+.prose th {
+  background-color: var(--ap-muted);
+  font-weight: 600;
+}
+
+/* Smooth streaming animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.streaming-message {
+  animation: fadeIn 0.15s ease-in;
+}
+
+/* Cursor animation for streaming text */
+@keyframes cursor-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.streaming-cursor .prose > :last-child::after {
+  content: '▋';
+  animation: cursor-pulse 1.5s ease-in-out infinite;
+  margin-left: 2px;
+  color: var(--ap-accent);
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streaming-message,
+  .streaming-cursor .prose > :last-child::after {
+    animation: none;
+  }
+}
