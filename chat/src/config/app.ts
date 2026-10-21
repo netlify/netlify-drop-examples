@@ -28,8 +28,6 @@ export const appConfig = {
     maxInputChars: 500,
     // Longest reply, in tokens.
     maxOutputTokens: 400,
-    // How many recent messages are sent as context.
-    historyMessages: 4,
     model: 'claude-haiku-4-5',
   },
 } as const

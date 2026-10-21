@@ -62,13 +62,6 @@ function jsonResponse(body: object, status: number) {
   })
 }
 
-/** Keeps the last `count` messages, starting on a user turn. */
-function recentMessages<T extends { role: string }>(messages: Array<T>, count: number) {
-  const recent = messages.slice(-count)
-  while (recent.length > 0 && recent[0].role !== 'user') recent.shift()
-  return recent
-}
-
 export const genAIResponse = createServerFn({ method: 'GET', response: 'raw' })
   .inputValidator(
     (d: {
@@ -113,12 +106,15 @@ export const genAIResponse = createServerFn({ method: 'GET', response: 'raw' })
     }
 
     // The public demo runs on our AI credits, so it gets a cheaper model,
-    // short replies, trimmed history, and per-visitor/daily caps.
+    // short replies, no history, and per-visitor/daily caps.
     const demo = isOfficialDemoSite()
     const limits = appConfig.demoLimits
     if (demo) {
       const latest = formattedMessages[formattedMessages.length - 1]
       const customPrompt = data.systemPrompt?.enabled ? data.systemPrompt.value : ''
+      if (latest.role !== 'user') {
+        return jsonResponse({ error: 'No valid messages to send' }, 400)
+      }
       if (latest.content.length > limits.maxInputChars || customPrompt.length > limits.maxInputChars) {
         return jsonResponse({ error: 'too_long' satisfies DemoErrorCode }, 413)
       }
@@ -127,7 +123,9 @@ export const genAIResponse = createServerFn({ method: 'GET', response: 'raw' })
         return jsonResponse({ error: 'demo_limit' satisfies DemoErrorCode, reason }, 429)
       }
     }
-    const messages = demo ? recentMessages(formattedMessages, limits.historyMessages) : formattedMessages
+    // On the demo only the newest (length-checked) message is sent, so earlier
+    // history from the browser can't inflate the request.
+    const messages = demo ? formattedMessages.slice(-1) : formattedMessages
 
     const systemPrompt = data.systemPrompt?.enabled
       ? `${DEFAULT_SYSTEM_PROMPT}\n\n${data.systemPrompt.value}`

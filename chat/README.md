@@ -99,7 +99,7 @@ runs on our AI credits, so it's capped. The caps apply **only** on that site
 | Messages for the whole demo per UTC day | 100 |
 | Longest message or custom system prompt | 500 characters |
 | Longest reply | 400 tokens |
-| History sent as context | last 4 messages |
+| History sent as context | none: only the newest message |
 | Model | Claude Haiku 4.5 (own deploys use the model in `src/utils/ai.ts`) |
 
 Change them in `appConfig.demoLimits` (`src/config/app.ts`). Counts are kept in
