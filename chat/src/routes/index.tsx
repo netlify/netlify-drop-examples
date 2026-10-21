@@ -382,7 +382,10 @@ function Home() {
 
             {/* Input */}
             <div className="shrink-0 border-t border-border bg-background/80 backdrop-blur-sm">
-              <div className="mx-auto w-full max-w-3xl px-4 py-3">
+              {/* On the demo, leave room below the composer for the "Make this
+                  app yours" badge, which sits in the template's standard
+                  bottom-right spot. */}
+              <div className={`mx-auto w-full max-w-3xl px-4 pt-3 ${officialDemoSite ? 'pb-20' : 'pb-3'}`}>
                 <ChatInput
                   input={input}
                   setInput={setInput}
