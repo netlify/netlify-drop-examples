@@ -4,8 +4,7 @@
  */
 export const appConfig = {
   productName: 'Newt',
-  tagline:
-    'You can ask me about anything, I might or might not have a good answer, but you can still ask.',
+  tagline: 'An AI chat app you deploy and make your own.',
   assistantName: 'Claude',
   // Base URL for the setup checklist's "Learn more" links (README anchors).
   docsUrl: 'https://github.com/netlify/netlify-drop-examples/tree/main/chat',
