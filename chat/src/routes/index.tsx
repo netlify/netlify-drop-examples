@@ -11,10 +11,13 @@ import {
   WelcomeScreen,
   TopBanner,
   ModeToggle,
+  DemoLimitNotice,
 } from '../components'
 import { appConfig } from '../config/app'
 import { useConversations, useAppState, store, actions } from '../store'
 import { genAIResponse, type Message } from '../utils'
+import { useAppContext } from '../server/context'
+import type { DemoLimitReason } from '../server/demo-limits'
 
 function Home() {
   const {
@@ -40,6 +43,11 @@ function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const [pendingMessage, setPendingMessage] = useState<Message | null>(null)
+  const { officialDemoSite } = useAppContext()
+  const maxInputChars = officialDemoSite ? appConfig.demoLimits.maxInputChars : undefined
+  // Set when the demo's caps are used up; cleared when switching conversations.
+  const [demoLimit, setDemoLimit] = useState<DemoLimitReason | null>(null)
+  useEffect(() => setDemoLimit(null), [currentConversationId])
 
   const scrollToBottom = useCallback((smooth: boolean = false) => {
     if (messagesContainerRef.current) {
@@ -50,10 +58,10 @@ function Home() {
     }
   }, []);
 
-  // Scroll to bottom when messages change or loading state changes
+  // Scroll to bottom when messages change or the demo limit notice appears
   useEffect(() => {
     scrollToBottom(false)
-  }, [messages, scrollToBottom])
+  }, [messages, demoLimit, scrollToBottom])
 
   // Smooth scroll during streaming
   useEffect(() => {
@@ -88,6 +96,24 @@ function Home() {
           systemPrompt,
         },
       })
+
+      // The official demo answers 429/413 when its caps are hit (see
+      // `appConfig.demoLimits`); show that in the UI rather than as an error.
+      if (response.status === 429 || response.status === 413) {
+        const body = await response.json().catch(() => ({}))
+        if (body.error === 'demo_limit') {
+          setDemoLimit(body.reason === 'daily' ? 'daily' : 'visitor')
+          return
+        }
+        if (body.error === 'too_long') {
+          toast({
+            variant: 'warning',
+            title: 'Message too long',
+            description: `Demo messages and prompts are limited to ${appConfig.demoLimits.maxInputChars} characters.`,
+          })
+          return
+        }
+      }
 
       const reader = response.body?.getReader()
       if (!reader) {
@@ -350,6 +376,7 @@ function Home() {
                     />
                   ))}
                 {isLoading && !pendingMessage && <LoadingIndicator />}
+                {demoLimit && <DemoLimitNotice reason={demoLimit} />}
               </div>
             </div>
 
@@ -361,6 +388,7 @@ function Home() {
                   setInput={setInput}
                   handleSubmit={handleSubmit}
                   isLoading={isLoading}
+                  maxLength={maxInputChars}
                 />
               </div>
             </div>
@@ -371,6 +399,7 @@ function Home() {
             setInput={setInput}
             handleSubmit={handleSubmit}
             isLoading={isLoading}
+            maxLength={maxInputChars}
           />
         )}
       </SidebarInset>

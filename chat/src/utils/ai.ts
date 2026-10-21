@@ -1,6 +1,8 @@
 import { createServerFn } from '@tanstack/react-start'
 import { Anthropic } from '@anthropic-ai/sdk'
 import { appConfig } from '../config/app'
+import { isOfficialDemoSite } from '../config/flags'
+import { reserveDemoMessage } from '../server/demo-limits'
 
 export interface Message {
   id: string
@@ -50,7 +52,23 @@ const DEFAULT_SYSTEM_PROMPT = `You are ${appConfig.productName}, an AI assistant
 
 Keep responses concise and well-structured. Use appropriate Markdown formatting to enhance readability and understanding.`
 
-// Non-streaming implementation
+/** Error codes the client turns into UI instead of a generic error. */
+export type DemoErrorCode = 'demo_limit' | 'too_long'
+
+function jsonResponse(body: object, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+/** Keeps the last `count` messages, starting on a user turn. */
+function recentMessages<T extends { role: string }>(messages: Array<T>, count: number) {
+  const recent = messages.slice(-count)
+  while (recent.length > 0 && recent[0].role !== 'user') recent.shift()
+  return recent
+}
+
 export const genAIResponse = createServerFn({ method: 'GET', response: 'raw' })
   .inputValidator(
     (d: {
@@ -91,11 +109,25 @@ export const genAIResponse = createServerFn({ method: 'GET', response: 'raw' })
       }))
 
     if (formattedMessages.length === 0) {
-      return new Response(JSON.stringify({ error: 'No valid messages to send' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      })
+      return jsonResponse({ error: 'No valid messages to send' }, 400)
     }
+
+    // The public demo runs on our AI credits, so it gets a cheaper model,
+    // short replies, trimmed history, and per-visitor/daily caps.
+    const demo = isOfficialDemoSite()
+    const limits = appConfig.demoLimits
+    if (demo) {
+      const latest = formattedMessages[formattedMessages.length - 1]
+      const customPrompt = data.systemPrompt?.enabled ? data.systemPrompt.value : ''
+      if (latest.content.length > limits.maxInputChars || customPrompt.length > limits.maxInputChars) {
+        return jsonResponse({ error: 'too_long' satisfies DemoErrorCode }, 413)
+      }
+      const reason = await reserveDemoMessage()
+      if (reason) {
+        return jsonResponse({ error: 'demo_limit' satisfies DemoErrorCode, reason }, 429)
+      }
+    }
+    const messages = demo ? recentMessages(formattedMessages, limits.historyMessages) : formattedMessages
 
     const systemPrompt = data.systemPrompt?.enabled
       ? `${DEFAULT_SYSTEM_PROMPT}\n\n${data.systemPrompt.value}`
@@ -110,10 +142,10 @@ export const genAIResponse = createServerFn({ method: 'GET', response: 'raw' })
 
     try {
       const stream = await anthropic.messages.stream({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 4096,
+        model: demo ? limits.model : 'claude-sonnet-4-5-20250929',
+        max_tokens: demo ? limits.maxOutputTokens : 4096,
         system: systemPrompt,
-        messages: formattedMessages,
+        messages,
       })
 
       // Transform the Anthropic stream to match the expected client format

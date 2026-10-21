@@ -13,6 +13,7 @@ Newt is a modern chat template built with TanStack Router and Claude AI integrat
 ## Table of Contents
 - [Publish it with Netlify Drop](#publish-it-with-netlify-drop)
 - [Go live checklist](#go-live-checklist)
+- [Demo limits](#demo-limits)
 - [Features](#features)
   - [AI Capabilities](#ai-capabilities)
   - [User Experience](#user-experience)
@@ -85,6 +86,26 @@ To remove it, delete `src/components/SetupPrompt.tsx`,
 `src/components/GoLiveChecklist.tsx` and
 `src/components/NetlifyDeployBadge.tsx`, plus the `<SetupPrompt />` line in
 `src/routes/__root.tsx`.
+
+## Demo limits
+
+The official demo ([chat-app-pack.netlify.app](https://chat-app-pack.netlify.app/))
+runs on our AI credits, so it's capped. The caps apply **only** on that site
+(`appConfig.officialDemoSiteId`); your own deploy has none of them.
+
+| Cap | Value |
+| --- | --- |
+| Messages per visitor per UTC day | 2 |
+| Messages for the whole demo per UTC day | 100 |
+| Longest message or custom system prompt | 500 characters |
+| Longest reply | 400 tokens |
+| History sent as context | last 4 messages |
+| Model | Claude Haiku 4.5 (own deploys use the model in `src/utils/ai.ts`) |
+
+Change them in `appConfig.demoLimits` (`src/config/app.ts`). Counts are kept in
+Netlify Blobs (`src/server/demo-limits.ts`), keyed by UTC day and a hash of the
+visitor's IP. When a cap is hit, the chat shows a "Make this app yours" card
+instead of a reply.
 
 ## Features
 

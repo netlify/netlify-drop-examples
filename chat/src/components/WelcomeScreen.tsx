@@ -6,6 +6,7 @@ interface WelcomeScreenProps {
   setInput: (value: string) => void
   handleSubmit: (e: React.FormEvent) => Promise<void>
   isLoading: boolean
+  maxLength?: number
 }
 
 export const WelcomeScreen = (props: WelcomeScreenProps) => (

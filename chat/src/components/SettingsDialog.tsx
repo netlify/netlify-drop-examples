@@ -20,6 +20,8 @@ import {
 } from 'app-packs-ui'
 import { useAppState } from '../store/hooks'
 import { Modal } from './Modal'
+import { appConfig } from '../config/app'
+import { useAppContext } from '../server/context'
 
 interface SettingsDialogProps {
   isOpen: boolean
@@ -30,6 +32,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [promptForm, setPromptForm] = useState({ name: '', content: '' })
   const [isAddingPrompt, setIsAddingPrompt] = useState(false)
   const { prompts, createPrompt, deletePrompt, setPromptActive } = useAppState()
+  const { officialDemoSite } = useAppContext()
 
   const handleAddPrompt = () => {
     if (!promptForm.name.trim() || !promptForm.content.trim()) return
@@ -91,6 +94,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                     }
                     placeholder="Describe how the assistant should behave..."
                     className="ap-input h-32"
+                    maxLength={officialDemoSite ? appConfig.demoLimits.maxInputChars : undefined}
                   />
                 </Field>
                 <div className="flex justify-end gap-2">

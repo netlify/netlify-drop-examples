@@ -7,6 +7,7 @@ interface ChatInputProps {
   handleSubmit: (e: React.FormEvent) => Promise<void>
   isLoading: boolean
   autoFocus?: boolean
+  maxLength?: number
 }
 
 export const ChatInput = ({
@@ -15,6 +16,7 @@ export const ChatInput = ({
   handleSubmit,
   isLoading,
   autoFocus = false,
+  maxLength,
 }: ChatInputProps) => (
   <form onSubmit={handleSubmit} className="relative">
     <label htmlFor="chat-input" className="sr-only">
@@ -34,6 +36,7 @@ export const ChatInput = ({
       className="ap-input block resize-none overflow-hidden pr-14 shadow-sm"
       rows={1}
       autoFocus={autoFocus}
+      maxLength={maxLength}
       style={{ minHeight: '56px', maxHeight: '200px' }}
       onInput={(e) => {
         const target = e.target as HTMLTextAreaElement

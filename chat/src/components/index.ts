@@ -6,3 +6,4 @@ export { WelcomeScreen } from './WelcomeScreen';
 export { SettingsDialog } from './SettingsDialog';
 export { TopBanner } from './TopBanner';
 export { ModeToggle } from './ModeToggle';
+export { DemoLimitNotice } from './DemoLimitNotice';
