@@ -31,8 +31,8 @@ export type AppContext = {
 // no-ops when auth is off, so this grants nothing.
 const DEMO_SESSION_USER: AppContextUser = {
   id: 'demo-user',
-  email: 'demo@example.com',
-  name: 'Demo User',
+  email: appConfig.learning.demoUser.email,
+  name: appConfig.learning.demoUser.name,
   roles: [appConfig.adminRole],
 }
 
