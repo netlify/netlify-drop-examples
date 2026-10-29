@@ -72,7 +72,7 @@ export const appConfig = {
   // database and shows the admin-only setup checklist instead. If your fork
   // has no hosted demo, delete this, `isOfficialDemoSite()` in
   // `src/config/flags.ts`, and `netlify-deploy-badge.tsx`.
-  officialDemoSiteId: '480ddca5-1fd1-4784-b8c7-c889474b8cf9',
+  officialDemoSiteId: '0b06729f-158f-4c37-8a3b-4bddc6326628',
   // Roles allowed to upload/download files via `/api/upload` and
   // `/api/files/:key` (see `netlify/functions/upload.mts` /
   // `netlify/functions/files.mts`). Defaults to `[]` ("not configured
@@ -88,6 +88,9 @@ export const appConfig = {
     // Roles allowed to create/edit/publish courses and view the team
     // progress report. Every signed-in user can take published courses.
     managerRoles: ['admin', 'hr_admin'] as string[],
+    // Who you are whenever sign-in is off (local dev, the public demo): the
+    // dashboard greets this name and progress is recorded against them.
+    demoUser: { name: 'Alex Morgan', email: 'alex.morgan@example.com' },
     welcomeTitle: 'Welcome back',
     welcomeSubtitle: 'Complete your learning checklist to get started.',
     gettingStarted: [

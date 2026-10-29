@@ -236,11 +236,6 @@
         color: var(--text);
       }
 
-      /* A card without a live site yet still keeps the icon on the right. */
-      .card__source:only-child {
-        margin-left: auto;
-      }
-
       /* ---------- Footer ---------- */
 
       footer {
@@ -679,6 +674,22 @@
               </svg>
             </p>
             <div class="card__footer">
+              <a class="card__live" href="https://learning-portal-app-pack.netlify.app/">
+                View live site
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M7 17 17 7M9 7h8v8" />
+                </svg>
+              </a>
               <a
                 class="card__source"
                 href="https://github.com/netlify/netlify-drop-examples/tree/main/learning-portal"

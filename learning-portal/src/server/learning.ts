@@ -107,7 +107,10 @@ export type CourseSummary = Course & {
  */
 function toLearner(user: SessionUser | null): Learner {
   if (user) return { userId: user.id, userEmail: user.email ?? null, userName: user.name ?? null }
-  if (isDemoMode()) return { userId: DEMO_LEARNER_ID, userEmail: 'demo@example.com', userName: 'Demo User' }
+  if (isDemoMode()) {
+    const { email, name } = appConfig.learning.demoUser
+    return { userId: DEMO_LEARNER_ID, userEmail: email, userName: name }
+  }
   return { userId: 'anonymous', userEmail: null, userName: 'Anonymous learner' }
 }
 

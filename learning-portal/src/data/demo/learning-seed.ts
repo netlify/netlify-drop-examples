@@ -1,4 +1,5 @@
 import type { NewCourse, NewLesson, NewLessonProgress } from '@/db/schema'
+import { appConfig } from '@/config/app'
 
 /**
  * Single source of truth for the starter course catalog.
@@ -186,7 +187,11 @@ export const seedLessons: Array<SeedLesson> = [
 export const DEMO_LEARNER_ID = 'demo-user'
 
 const demoLearners = [
-  { userId: DEMO_LEARNER_ID, userEmail: 'demo@example.com', userName: 'Demo User' },
+  {
+    userId: DEMO_LEARNER_ID,
+    userEmail: appConfig.learning.demoUser.email,
+    userName: appConfig.learning.demoUser.name,
+  },
   { userId: 'demo-learner-jordan', userEmail: 'jordan.rivera@example.com', userName: 'Jordan Rivera' },
   { userId: 'demo-learner-priya', userEmail: 'priya.shah@example.com', userName: 'Priya Shah' },
   { userId: 'demo-learner-marcus', userEmail: 'marcus.lee@example.com', userName: 'Marcus Lee' },
